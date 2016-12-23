@@ -2,13 +2,17 @@ package mybatis;
 
 /**
  * Created by zsc on 2016/12/20.
+ * 仅用权重作比较
  */
-public class Forward {
+public class Forward implements Comparable<Forward>{
+    private int id;
     private String title;//标题
     private String url;//网页地址
     private String description;//摘要
     private int quality;//权重
     private String keyWords;//关键词
+
+    public Forward() {}
 
     public Forward(String title, String url, String description, int quality, String keyWords) {
         this.title = title;
@@ -16,6 +20,23 @@ public class Forward {
         this.description = description;
         this.quality = quality;
         this.keyWords = keyWords;
+    }
+
+    @Override
+    public int compareTo(Forward o) {
+        if (o.quality == quality) {
+            return 0;
+        } else {
+            return o.quality > quality ? 1 : -1;
+        }
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getDescription() {

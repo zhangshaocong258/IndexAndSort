@@ -24,6 +24,7 @@ public class ForwardIndex {
     private List<Forward> people = new ArrayList<Forward>();
     private List<Forward> topic = new ArrayList<Forward>();
     private List<Forward> collection = new ArrayList<Forward>();
+    private String DELIMITER = "\r\n";
 
     public static void main(String args[]) throws IOException{
         ForwardIndex forwardIndex = new ForwardIndex();
@@ -54,7 +55,7 @@ public class ForwardIndex {
         Pattern collection = Pattern.compile("^(www.zhihu.com_collection_(.*))");
         Pattern topic = Pattern.compile("^(www.zhihu.com_topic_(.*))");
         Pattern people = Pattern.compile("^(www.zhihu.com_people_(.*))");
-        Pattern org = Pattern.compile("^(www.zhihu.com_org_(.*))");
+//        Pattern org = Pattern.compile("^(www.zhihu.com_org_(.*))");
 //        Pattern roundTable = Pattern.compile("^(www.zhihu.com_roundtable_(.*))");
 //        Pattern publications = Pattern.compile("^(www.zhihu.com_publications_(.*))");
 
@@ -62,59 +63,70 @@ public class ForwardIndex {
         Matcher collectionMatcher = collection.matcher(fileName);
         Matcher topicMatcher = topic.matcher(fileName);
         Matcher peopleMatcher = people.matcher(fileName);
-        Matcher orgMatcher = org.matcher(fileName);
+//        Matcher orgMatcher = org.matcher(fileName);
 //        Matcher roundTableMatcher = roundTable.matcher(fileName);
 //        Matcher publicationsMatcher = publications.matcher(fileName);
-        
+
         Document doc = Jsoup.parse(file, "UTF-8");
-        String title = doc.title().split("-")[0].trim();
+        String title = doc.title().split("-")[0].trim().toLowerCase();
         if (title.equals("")) {
             return;//标题不能为空
         }
         System.out.println(title);
         String url = doc.select("url").first().text();
-        String description = title;
+        String description;
         int quality = -1;
-        List<String> keyWordsTerm = null;
-        String keyWords = null;
+        List<String> keyWordsTerm;
+        String keyWords;
         if (questionMatcher.matches()) {
             quality = Integer.valueOf(doc.select("div.zh-question-followers-sidebar").select("strong").text());//问题关注数（Jsoup）
             keyWordsTerm = HanLP.extractKeyword(title.split("-")[0].trim(), 10);
             keyWords = ListToString(keyWordsTerm);
+            description = title;
             this.question.add(new Forward(title, url, description, quality, keyWords));
             System.out.println("question " + quality);
         } else if (collectionMatcher.matches()) {
             quality = Integer.valueOf(doc.select("a[data-za-l=collection_followers_count]").text());//收藏关注数
-            keyWords = title;
+            keyWords = description = null;
             this.collection.add(new Forward(title, url, description, quality, keyWords));
             System.out.println("collection " + quality);
         } else if (topicMatcher.matches()) {
             quality = Integer.valueOf(doc.select("div.zm-topic-side-followers-info").select("strong").text());//话题关注者
-            keyWords = title;
+            keyWords = description = null;
             this.topic.add(new Forward(title, url, description, quality, keyWords));
             System.out.println("topic " + quality);
         } else if (peopleMatcher.matches()) {
-            quality = Integer.valueOf(doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());//关注者
-            if (quality < 100000) {
-                quality = 100000;
+            quality = Integer.valueOf(doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text().equals("") ?
+                    doc.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text() :
+                    doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());
+            //无法得到span的内容，只能得到h1的内容（张佳玮公众号：张佳玮写字的地方），做判断
+            if (doc.select("h1.ProfileHeader-title").text().trim().length() == title.length()) {
+                description = null;
+                keyWords = title;
+            } else {
+                description = doc.select("h1.ProfileHeader-title").text().substring(title.length());
+                keyWords = new StringBuilder().append(title).append(DELIMITER).
+                        append(description).toString().toLowerCase();
             }
-            keyWords = title;
             this.people.add(new Forward(title, url, description, quality, keyWords));
             System.out.println("people " + quality);
-        } else if (orgMatcher.matches()) {
-            quality = 100000;//关注者
-            keyWords = title;
-            this.people.add(new Forward(title, url, description, quality, keyWords));
-            System.out.println("org " + quality);
         }
-        if (quality == -1 || keyWords == null) {
+//        else if (orgMatcher.matches()) {
+//            quality = Integer.valueOf(doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text().equals("") ?
+//                    doc.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text() :
+//                    doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());//关注者
+//            keyWords = title;
+//            this.people.add(new Forward(title, url, description, quality, keyWords));
+//            System.out.println("org " + quality);
+//        }
+        if (quality == -1) {
             throw new NullPointerException("获取特征失败 " + fileName);
         }
 
     }
 
     private String  ListToString(List<String> list) {
-        return list.toString().substring(1, list.toString().length() - 1);
+        return list.toString().substring(1, list.toString().length() - 1).toLowerCase();
     }
 
     public void insertToDB() {
@@ -145,29 +157,29 @@ public class ForwardIndex {
 
     private void insertQuestion(Forward content) {
         SqlSession sqlSession = getSessionFactory().openSession();
-        QuestionForwardDao forwardMapper = sqlSession.getMapper(QuestionForwardDao.class);
-        forwardMapper.insert(content);
+        QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
+        forwardDao.insert(content);
         sqlSession.commit();
     }
 
     private void insertPeople(Forward content) {
         SqlSession sqlSession = getSessionFactory().openSession();
-        PeopleForwardDao forwardMapper = sqlSession.getMapper(PeopleForwardDao.class);
-        forwardMapper.insert(content);
+        PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
+        forwardDao.insert(content);
         sqlSession.commit();
     }
 
     private void insertTopic(Forward content) {
         SqlSession sqlSession = getSessionFactory().openSession();
-        TopicForwardDao forwardMapper = sqlSession.getMapper(TopicForwardDao.class);
-        forwardMapper.insert(content);
+        TopicForwardDao forwardDao = sqlSession.getMapper(TopicForwardDao.class);
+        forwardDao.insert(content);
         sqlSession.commit();
     }
 
     private void insertCollection(Forward content) {
         SqlSession sqlSession = getSessionFactory().openSession();
-        CollectionForwardDao forwardMapper = sqlSession.getMapper(CollectionForwardDao.class);
-        forwardMapper.insert(content);
+        CollectionForwardDao forwardDao = sqlSession.getMapper(CollectionForwardDao.class);
+        forwardDao.insert(content);
         sqlSession.commit();
     }
 
