@@ -7,6 +7,7 @@ package mybatis;
 public class Reverse {
     private int id;
     private String keyWords;
+    private String IDF;
     private String urls;
 
     public Reverse() {}
@@ -30,6 +31,14 @@ public class Reverse {
 
     public void setKeyWords(String keyWords) {
         this.keyWords = keyWords;
+    }
+
+    public String getIDF() {
+        return IDF;
+    }
+
+    public void setIDF(String IDF) {
+        this.IDF = IDF;
     }
 
     public String getUrls() {

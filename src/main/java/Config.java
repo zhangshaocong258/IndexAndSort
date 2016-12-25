@@ -10,6 +10,11 @@ public class Config {
      */
     public static String path;
 
+    /**
+     * 分隔符
+     */
+    public static String DELIMITER;
+
 
     static {
         Properties properties = new Properties();
@@ -20,6 +25,7 @@ public class Config {
         }
 
         path = properties.getProperty("path");
+        DELIMITER = properties.getProperty("DELIMITER");
 
     }
 }

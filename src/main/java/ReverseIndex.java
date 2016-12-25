@@ -15,7 +15,6 @@ public class ReverseIndex {
     private List<Forward> fQuestions;
     private List<Forward> fPeoples;
     private List<Forward> fTopics;
-    private String DELIMITER = "\r\n";
 
     private Map<String, StringBuilder> questionsMap = new HashMap<String, StringBuilder>();
     private Map<String, StringBuilder> peoplesMap = new HashMap<String, StringBuilder>();
@@ -40,17 +39,18 @@ public class ReverseIndex {
             List<String> keyWords = Arrays.asList(question.getKeyWords().split(", "));//间隔是都和加空格！！！
             for (String keyWord : keyWords) {
                 if (questionsMap.containsKey(keyWord)) {
-                    questionsMap.get(keyWord).append(DELIMITER).append(question.getId());
+                    questionsMap.get(keyWord).append(Config.DELIMITER).append(question.getId());
                 } else {
                     questionsMap.put(keyWord, new StringBuilder().append(question.getId()));
                 }
             }
         }
+        int size = questionsMap.size();
         for (Map.Entry<String, StringBuilder> entry : questionsMap.entrySet()) {
             rQuestions.setKeyWords(entry.getKey());
+            rQuestions.setIDF(String.format("%.2f", Math.log10((double) (size / entry.getValue().toString().split(Config.DELIMITER).length))));
             rQuestions.setUrls(entry.getValue().toString());
             insertQuestion(rQuestions);
-            System.out.println(entry.getKey() + "   " + entry.getValue().toString());
         }
 
 
@@ -60,7 +60,7 @@ public class ReverseIndex {
         selectAllPeoples();//得到people的正排索引
         for (Forward people : fPeoples) {
             if (peoplesMap.containsKey(people.getKeyWords())) {
-                peoplesMap.get(people.getKeyWords()).append(DELIMITER).append(people.getId());
+                peoplesMap.get(people.getKeyWords()).append(Config.DELIMITER).append(people.getId());
             } else {
                 peoplesMap.put(people.getKeyWords(), new StringBuilder().append(people.getId()));
             }
@@ -68,9 +68,9 @@ public class ReverseIndex {
 
         for (Map.Entry<String, StringBuilder> entry : peoplesMap.entrySet()) {
             rPeoples.setKeyWords(entry.getKey());
+            rPeoples.setIDF("1");
             rPeoples.setUrls(entry.getValue().toString());
             insertPeople(rPeoples);
-            System.out.println(entry.getKey() + "   " + entry.getValue().toString());
         }
     }
 
@@ -78,7 +78,7 @@ public class ReverseIndex {
         selectAllTopics();//得到people的正排索引
         for (Forward topic : fTopics) {
             if (topicsMap.containsKey(topic.getTitle())) {
-                topicsMap.get(topic.getTitle()).append(DELIMITER).append(topic.getId());
+                topicsMap.get(topic.getTitle()).append(Config.DELIMITER).append(topic.getId());
             } else {
                 topicsMap.put(topic.getTitle(), new StringBuilder().append(topic.getId()));
             }
@@ -86,9 +86,9 @@ public class ReverseIndex {
 
         for (Map.Entry<String, StringBuilder> entry : topicsMap.entrySet()) {
             rTopics.setKeyWords(entry.getKey());
+            rTopics.setIDF("1");
             rTopics.setUrls(entry.getValue().toString());
             insertTopic(rTopics);
-            System.out.println(entry.getKey() + "   " + entry.getValue().toString());
         }
     }
 
@@ -125,20 +125,20 @@ public class ReverseIndex {
 
     private void selectAllQuestion() {
         SqlSession sqlSession = getSessionFactory().openSession();
-        QuestionForwardDao forwardMapper = sqlSession.getMapper(QuestionForwardDao.class);
-        fQuestions = forwardMapper.selectAll();
+        QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
+        fQuestions = forwardDao.selectAll();
     }
 
     private void selectAllPeoples() {
         SqlSession sqlSession = getSessionFactory().openSession();
-        PeopleForwardDao forwardMapper = sqlSession.getMapper(PeopleForwardDao.class);
-        fPeoples = forwardMapper.selectAll();
+        PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
+        fPeoples = forwardDao.selectAll();
     }
 
     private void selectAllTopics() {
         SqlSession sqlSession = getSessionFactory().openSession();
-        TopicForwardDao forwardMapper = sqlSession.getMapper(TopicForwardDao.class);
-        fTopics = forwardMapper.selectAll();
+        TopicForwardDao forwardDao = sqlSession.getMapper(TopicForwardDao.class);
+        fTopics = forwardDao.selectAll();
     }
 
 
