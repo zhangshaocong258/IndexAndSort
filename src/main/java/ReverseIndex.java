@@ -16,9 +16,9 @@ public class ReverseIndex {
     private List<Forward> fPeoples;
     private List<Forward> fTopics;
 
-    private Map<String, StringBuilder> questionsMap = new HashMap<String, StringBuilder>();
-    private Map<String, StringBuilder> peoplesMap = new HashMap<String, StringBuilder>();
-    private Map<String, StringBuilder> topicsMap = new HashMap<String, StringBuilder>();
+    private Map<String, TreeSet<Forward>> questionsMap = new HashMap<String, TreeSet<Forward>>();
+    private Map<String, TreeSet<Forward>> peoplesMap = new HashMap<String, TreeSet<Forward>>();
+    private Map<String, TreeSet<Forward>> topicsMap = new HashMap<String, TreeSet<Forward>>();
 
     private Reverse rQuestions = new Reverse();
     private Reverse rPeoples = new Reverse();
@@ -36,20 +36,26 @@ public class ReverseIndex {
     private void genRQuestions() {
         selectAllQuestion();
         for (Forward question : fQuestions) {
-            List<String> keyWords = Arrays.asList(question.getKeyWords().split(", "));//间隔是都和加空格！！！
+            List<String> keyWords = Arrays.asList(question.getKeyWords().split(", "));//间隔是逗号加空格！！！
             for (String keyWord : keyWords) {
                 if (questionsMap.containsKey(keyWord)) {
-                    questionsMap.get(keyWord).append(Config.DELIMITER).append(question.getId());
+                    questionsMap.get(keyWord).add(question);
                 } else {
-                    questionsMap.put(keyWord, new StringBuilder().append(question.getId()));
+                    questionsMap.put(keyWord, new TreeSet<Forward>());
+                    questionsMap.get(keyWord).add(question);
+
                 }
             }
         }
         int size = questionsMap.size();
-        for (Map.Entry<String, StringBuilder> entry : questionsMap.entrySet()) {
+        for (Map.Entry<String, TreeSet<Forward>> entry : questionsMap.entrySet()) {
             rQuestions.setKeyWords(entry.getKey());
-            rQuestions.setIDF(String.format("%.2f", Math.log10((double) (size / entry.getValue().toString().split(Config.DELIMITER).length))));
-            rQuestions.setUrls(entry.getValue().toString());
+            rQuestions.setIDF(String.format("%.2f", Math.log10((double) (size / entry.getValue().size()))));
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Forward forward : entry.getValue()) {
+                stringBuilder.append(forward.getId()).append(Config.DELIMITER);
+            }
+            rQuestions.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
             insertQuestion(rQuestions);
         }
 
@@ -60,16 +66,21 @@ public class ReverseIndex {
         selectAllPeoples();//得到people的正排索引
         for (Forward people : fPeoples) {
             if (peoplesMap.containsKey(people.getKeyWords())) {
-                peoplesMap.get(people.getKeyWords()).append(Config.DELIMITER).append(people.getId());
+                peoplesMap.get(people.getKeyWords()).add(people);
             } else {
-                peoplesMap.put(people.getKeyWords(), new StringBuilder().append(people.getId()));
+                peoplesMap.put(people.getKeyWords(), new TreeSet<Forward>());
+                peoplesMap.get(people.getKeyWords()).add(people);
             }
         }
-
-        for (Map.Entry<String, StringBuilder> entry : peoplesMap.entrySet()) {
+        int size = peoplesMap.size();
+        for (Map.Entry<String, TreeSet<Forward>> entry : peoplesMap.entrySet()) {
             rPeoples.setKeyWords(entry.getKey());
-            rPeoples.setIDF("1");
-            rPeoples.setUrls(entry.getValue().toString());
+            rPeoples.setIDF(String.format("%.2f", Math.log10((double) (size / entry.getValue().size()))));
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Forward forward : entry.getValue()) {
+                stringBuilder.append(forward.getId()).append(Config.DELIMITER);
+            }
+            rPeoples.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
             insertPeople(rPeoples);
         }
     }
@@ -78,16 +89,21 @@ public class ReverseIndex {
         selectAllTopics();//得到people的正排索引
         for (Forward topic : fTopics) {
             if (topicsMap.containsKey(topic.getTitle())) {
-                topicsMap.get(topic.getTitle()).append(Config.DELIMITER).append(topic.getId());
+                topicsMap.get(topic.getTitle()).add(topic);
             } else {
-                topicsMap.put(topic.getTitle(), new StringBuilder().append(topic.getId()));
+                topicsMap.put(topic.getTitle(), new TreeSet<Forward>());
+                topicsMap.get(topic.getTitle()).add(topic);
             }
         }
-
-        for (Map.Entry<String, StringBuilder> entry : topicsMap.entrySet()) {
+        int size = topicsMap.size();
+        for (Map.Entry<String, TreeSet<Forward>> entry : topicsMap.entrySet()) {
             rTopics.setKeyWords(entry.getKey());
-            rTopics.setIDF("1");
-            rTopics.setUrls(entry.getValue().toString());
+            rTopics.setIDF(String.format("%.2f", Math.log10((double) (size / entry.getValue().size()))));
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Forward forward : entry.getValue()) {
+                stringBuilder.append(forward.getId()).append(Config.DELIMITER);
+            }
+            rTopics.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
             insertTopic(rTopics);
         }
     }

@@ -23,11 +23,11 @@ public class Forward implements Comparable<Forward>{
     }
 
     @Override
-    public int compareTo(Forward o) {
-        if (o.quality == quality) {
+    public int compareTo(Forward forward) {
+        if (forward.quality == quality) {
             return 0;
         } else {
-            return o.quality > quality ? 1 : -1;
+            return forward.quality > quality ? 1 : -1;
         }
     }
 
