@@ -1,9 +1,6 @@
 import com.hankcs.hanlp.seg.common.Term;
 import com.hankcs.hanlp.tokenizer.StandardTokenizer;
-import mybatis.Forward;
-import mybatis.QuestionForwardDao;
-import mybatis.QuestionReverseDao;
-import mybatis.Reverse;
+import mybatis.*;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -13,35 +10,32 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Created by zsc on 2016/12/24.
- * 务必确保初始化
+ * Created by zsc on 2016/12/26.
  */
-public class QuestionSE {
-    private List<Forward> fQuestions;
-    private List<Reverse> rQuestions;
-    private Map<String, Reverse> rQuestionsMap = new HashMap<String, Reverse>();
-    private Map<String, Forward> fQuestionsForward = new HashMap<String, Forward>();
-
+public class PeopleSE {
+    private List<Forward> fPeoples;
+    private List<Reverse> rPeoples;
+    private Map<String, Reverse> rPeoplesMap = new HashMap<String, Reverse>();
+    private Map<String, Forward> fPeoplesForward = new HashMap<String, Forward>();
 
     public static void main(String args[]) {
-        QuestionSE questionSE = new QuestionSE();
-        questionSE.readAllMaps();
+        PeopleSE peopleSE = new PeopleSE();
+        peopleSE.readAllMaps();
         Scanner scanner = new Scanner(System.in);
         System.out.println("请输入字符串：");
-        questionSE.genUrls(scanner.nextLine());
+        peopleSE.genUrls(scanner.nextLine());
 
     }
-
     //将正排和倒排数据读到内存中，保存在map，初始化数据
     private void readAllMaps() {
-        selectAllQuestion();//将数据库的问题正排和倒排读进来
+        selectAllPeople();//将数据库的问题正排和倒排读进来
         //将2个表读到Map里
-        for (Reverse question : rQuestions) {
-            rQuestionsMap.put(question.getKeyWords(), question);
+        for (Reverse people : rPeoples) {
+            rPeoplesMap.put(people.getKeyWords(), people);
         }
 
-        for (Forward question : fQuestions) {
-            fQuestionsForward.put(String.valueOf(question.getId()), question);
+        for (Forward people : fPeoples) {
+            fPeoplesForward.put(String.valueOf(people.getId()), people);
         }
 
     }
@@ -51,9 +45,12 @@ public class QuestionSE {
         List<Term> terms = Filter.accept(StandardTokenizer.segment(str));
         List<Reverse> keyWords = new ArrayList<Reverse>();
         for (Term term : terms) {
-            if (rQuestionsMap.containsKey(term.word)) {
-                keyWords.add(rQuestionsMap.get(term.word));
+            for (Map.Entry<String, Reverse> entry : rPeoplesMap.entrySet()) {
+                if (entry.getKey().contains(term.word)) {
+                    keyWords.add(entry.getValue());
+                }
             }
+
         }
         Collections.sort(keyWords);
 
@@ -94,12 +91,12 @@ public class QuestionSE {
         genInSequence(urls, sortedUrls, start + 1, len, temp);
     }
 
-    private void selectAllQuestion() {
+    private void selectAllPeople() {
         SqlSession sqlSession = getSessionFactory().openSession();
-        QuestionReverseDao reverseDao = sqlSession.getMapper(QuestionReverseDao.class);
-        QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
-        rQuestions = reverseDao.selectAll();
-        fQuestions = forwardDao.selectAll();
+        PeopleReverseDao reverseDao = sqlSession.getMapper(PeopleReverseDao.class);
+        PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
+        rPeoples = reverseDao.selectAll();
+        fPeoples = forwardDao.selectAll();
     }
 
 
