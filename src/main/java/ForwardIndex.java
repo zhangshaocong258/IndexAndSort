@@ -154,31 +154,51 @@ public class ForwardIndex {
     }
 
     private void insertQuestion(Forward content) {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
-        forwardDao.insert(content);
-        sqlSession.commit();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
+            forwardDao.insert(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void insertPeople(Forward content) {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
-        forwardDao.insert(content);
-        sqlSession.commit();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
+            forwardDao.insert(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void insertTopic(Forward content) {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        TopicForwardDao forwardDao = sqlSession.getMapper(TopicForwardDao.class);
-        forwardDao.insert(content);
-        sqlSession.commit();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            TopicForwardDao forwardDao = sqlSession.getMapper(TopicForwardDao.class);
+            forwardDao.insert(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void insertCollection(Forward content) {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        CollectionForwardDao forwardDao = sqlSession.getMapper(CollectionForwardDao.class);
-        forwardDao.insert(content);
-        sqlSession.commit();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            CollectionForwardDao forwardDao = sqlSession.getMapper(CollectionForwardDao.class);
+            forwardDao.insert(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     //Mybatis 通过SqlSessionFactory获取SqlSession, 然后才能通过SqlSession与数据库进行交互
