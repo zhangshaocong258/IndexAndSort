@@ -15,6 +15,9 @@ import java.util.*;
 /**
  * Created by zsc on 2016/12/24.
  * 务必确保初始化
+ * 关键词A,B,C按IDF大小排序
+ * 按由多到少得到A,B,C的全组合
+ * 对每一个组合进行求交，得到网页编号，并添加至LinkedHashSet
  */
 public class QuestionSE {
     private List<Forward> fQuestions;
@@ -55,16 +58,16 @@ public class QuestionSE {
                 keyWords.add(rQuestionsMap.get(term.word));
             }
         }
-        Collections.sort(keyWords);
+        Collections.sort(keyWords);//按IDF大小排序
 
-        //得到按序排列的url集合
+        //得到按序排列的url集合，只要string
         List<String> sortedUrls = new ArrayList<String>();
         for (Reverse reverse : keyWords) {
             sortedUrls.add(reverse.getUrls());
         }
 
         //得到最终排序
-        Set<String> urls = new LinkedHashSet<>();
+        Set<String> urls = new LinkedHashSet<>();//保证按顺序且不重复
         List<String> temp = new ArrayList<String>();
         int len = sortedUrls.size() + 1;
         for (int i = len - 1; i != 0; i--) {
@@ -79,7 +82,7 @@ public class QuestionSE {
         if (len == 0) {
             List<String> result = new ArrayList<>();
             result.addAll(Arrays.asList(temp.get(0).split(Config.DELIMITER)));
-            for (int i = 0; i < temp.size(); i++) {
+            for (int i = 1; i < temp.size(); i++) {
                 result.retainAll(Arrays.asList(temp.get(i).split(Config.DELIMITER)));
             }
             urls.addAll(result);
