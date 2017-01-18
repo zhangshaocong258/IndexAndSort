@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.QuestionReverseDao">
+
+    <resultMap id="ReverseMap" type="Reverse">
+        <id property="id" column="id" />
+        <result property="keyWords" column="keyWords" />
+        <result property="IDF" column="IDF" />
+        <result property="urls" column="urls" />
+    </resultMap>
+
+    <select id="selectById" resultType="Reverse" >
+        select * from questionr where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="ReverseMap" >
+        select * from questionr
+    </select>
+
+    <insert id="insert" parameterType="Reverse" useGeneratedKeys="true" keyProperty="id">
+        insert into questionr(keyWords,IDF,urls)values(#{keyWords},#{IDF},#{urls})
+    </insert>
+
+    <update id="update" parameterType="Reverse" >
+        update questionr set keyWords=#{keyWords}, IDF=#{IDF}, urls=#{urls} where id=#{id}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        delete from questionr where id = #{id}
+    </delete>
+</mapper>

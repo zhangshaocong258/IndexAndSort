@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.CollectionForwardDao">
+
+    <resultMap id="ForwardMap" type="Forward">
+        <id property="id" column="id"/>
+        <result property="url" column="url"/>
+        <result property="description" column="description"/>
+        <result property="quality" column="quality"/>
+        <result property="keyWords" column="keyWords"/>
+    </resultMap>
+
+    <select id="selectById" resultType="Forward">
+        select * from collectionf where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="ForwardMap">
+        select * from collectionf
+    </select>
+
+    <insert id="insert" parameterType="Forward" useGeneratedKeys="true" keyProperty="id">
+        insert into collectionf(title,url,description,quality,keyWords)
+        values(#{title},#{url},#{description},#{quality},#{keyWords})
+    </insert>
+
+    <update id="update" parameterType="Forward">
+        update collectionf set title=#{title},url=#{url},description=#{description},quality=#{quality},keyWords=#{keyWords} where id=#{id}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        delete from collectionf where id = #{id}
+    </delete>
+</mapper>

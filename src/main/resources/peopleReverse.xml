@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.PeopleReverseDao">
+
+    <resultMap id="ReverseMap" type="Reverse">
+        <id property="id" column="id" />
+        <result property="keyWords" column="keyWords" />
+        <result property="IDF" column="IDF" />
+        <result property="urls" column="urls" />
+    </resultMap>
+
+    <select id="selectById" resultType="Reverse" >
+        select * from peopler where id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="ReverseMap" >
+        select * from peopler
+    </select>
+
+    <insert id="insert" parameterType="Reverse" useGeneratedKeys="true" keyProperty="id">
+        insert into peopler(keyWords,IDF,urls)values(#{keyWords},#{IDF},#{urls})
+    </insert>
+
+    <update id="update" parameterType="Reverse" >
+        update peopler set keyWords=#{keyWords}, IDF=#{IDF}, urls=#{urls} where id=#{id}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        delete from peopler where id = #{id}
+    </delete>
+</mapper>
