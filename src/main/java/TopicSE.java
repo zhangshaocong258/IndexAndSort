@@ -16,7 +16,7 @@ public class TopicSE {
     private List<Forward> fTopics;
     private List<Reverse> rTopics;
     private Map<String, Reverse> rTopicsMap = new HashMap<String, Reverse>();
-    private Map<String, Forward> fTopicsForward = new HashMap<String, Forward>();
+    private Map<String, Forward> fTopicsMap = new HashMap<String, Forward>();
 
     public static void main(String args[]) {
         TopicSE topicSE = new TopicSE();
@@ -36,7 +36,7 @@ public class TopicSE {
         }
 
         for (Forward people : fTopics) {
-            fTopicsForward.put(String.valueOf(people.getId()), people);
+            fTopicsMap.put(String.valueOf(people.getId()), people);
         }
 
     }
