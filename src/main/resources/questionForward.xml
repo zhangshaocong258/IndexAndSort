@@ -16,6 +16,19 @@
         select * from questionf where id = #{id}
     </select>
 
+    <!--find_in_set暂时不可以，待解决-->
+    <!--将mybatis升级到3.4.2，否则index无法重置-->
+    <select id="selectIn" resultType="Forward" >
+        select * from questionf where id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by field
+        <foreach collection="list" item="item" open="(id," separator="," close=")">
+            ${item}
+        </foreach>
+    </select>
+
     <select id="selectAll" resultMap="ForwardMap" >
         select * from questionf
     </select>

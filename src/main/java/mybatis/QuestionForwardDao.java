@@ -9,6 +9,8 @@ public interface QuestionForwardDao {
 
     Forward selectById (int Id);
 
+    List<Forward> selectIn(List<Integer> Ids);
+
     List<Forward> selectAll();
 
     void insert(Forward forward);

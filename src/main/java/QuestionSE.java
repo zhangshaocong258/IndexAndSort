@@ -22,8 +22,9 @@ import java.util.*;
 public class QuestionSE {
     private List<Forward> fQuestions;
     private List<Reverse> rQuestions;
+    private List<Forward> fFinalQuestions;
     private Map<String, Reverse> rQuestionsMap = new HashMap<String, Reverse>();
-    private Map<String, Forward> fQuestionsForward = new HashMap<String, Forward>();
+    private Map<String, Forward> fQuestionsMap = new HashMap<String, Forward>();
 
 
     public static void main(String args[]) {
@@ -44,7 +45,7 @@ public class QuestionSE {
         }
 
         for (Forward question : fQuestions) {
-            fQuestionsForward.put(String.valueOf(question.getId()), question);
+            fQuestionsMap.put(String.valueOf(question.getId()), question);
         }
 
     }
@@ -61,13 +62,14 @@ public class QuestionSE {
         Collections.sort(keyWords);//按IDF大小排序
 
         //得到按序排列的url集合，只要string
-        List<String> sortedUrls = new ArrayList<String>();
+        List<String> sortedUrls = new ArrayList<String>();//1DELIMITER26DELIMITER48,84DELIMITER85
         for (Reverse reverse : keyWords) {
             sortedUrls.add(reverse.getUrls());
         }
 
         //得到最终排序
-        Set<String> urls = new LinkedHashSet<>();//保证按顺序且不重复
+        Set<String> urls = new LinkedHashSet<String>();//保证按顺序且不重复
+        System.out.println("urls " + sortedUrls);
         List<String> temp = new ArrayList<String>();
         int len = sortedUrls.size() + 1;
         for (int i = len - 1; i != 0; i--) {
@@ -76,11 +78,21 @@ public class QuestionSE {
 
         //显示结果
         System.out.println("最终url: " + urls);
+
+        //从数据库读数据
+        List<Integer> fUrls = new ArrayList<Integer>();
+        for (String url : urls) {
+            fUrls.add(Integer.parseInt(url));
+        }
+        selectInQuestion(fUrls);
+        for (int i = 0; i < fFinalQuestions.size(); i++) {
+            System.out.println("读取结果 " + fFinalQuestions.get(i).getId());
+        }
     }
 
     private void genInSequence(Set<String> urls, List<String> sortedUrls, int start, int len, List<String> temp) {//len为组合的长度
         if (len == 0) {
-            List<String> result = new ArrayList<>();
+            List<String> result = new ArrayList<String>();
             result.addAll(Arrays.asList(temp.get(0).split(Config.DELIMITER)));
             for (int i = 1; i < temp.size(); i++) {
                 result.retainAll(Arrays.asList(temp.get(i).split(Config.DELIMITER)));
@@ -103,6 +115,12 @@ public class QuestionSE {
         QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
         rQuestions = reverseDao.selectAll();
         fQuestions = forwardDao.selectAll();
+    }
+
+    private void selectInQuestion(List<Integer> fUrls) {
+        SqlSession sqlSession = getSessionFactory().openSession();
+        QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
+        fFinalQuestions = forwardDao.selectIn(fUrls);
     }
 
 
