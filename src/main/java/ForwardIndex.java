@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,12 +77,14 @@ public class ForwardIndex {
         int quality = -1;
         List<String> keyWordsTerm;
         String keyWords;
+        String TF;
         if (questionMatcher.matches()) {
             quality = Integer.valueOf(doc.select("div.zh-question-followers-sidebar").select("strong").text());//问题关注数（Jsoup）
             keyWordsTerm = HanLP.extractKeyword(title.split("-")[0].trim(), 10);
             keyWords = ListToString(keyWordsTerm);
             description = title;
-            this.question.add(new Forward(title, url, description, quality, keyWords));
+            TF = String.format("%.2f",(double) 1 / keyWords.split(",").length);
+            this.question.add(new Forward(title, url, description, quality, keyWords, TF));
             System.out.println("question " + quality);
         } else if (collectionMatcher.matches()) {
             quality = Integer.valueOf(doc.select("a[data-za-l=collection_followers_count]").text());//收藏关注数

@@ -34,12 +34,12 @@
     </select>
 
     <insert id="insert" parameterType="Forward" useGeneratedKeys="true" keyProperty="id">
-        insert into questionf(title,url,description,quality,keyWords)
-        values(#{title},#{url},#{description},#{quality},#{keyWords})
+        insert into questionf(title,url,description,quality,keyWords,TF)
+        values(#{title},#{url},#{description},#{quality},#{keyWords},#{TF})
     </insert>
 
     <update id="update" parameterType="Forward" >
-        update questionf set title=#{title},url=#{url},description=#{description},quality=#{quality},keyWords=#{keyWords} where id=#{id}
+        update questionf set title=#{title},url=#{url},description=#{description},quality=#{quality},keyWords=#{keyWords},TF=#{TF} where id=#{id}
     </update>
 
     <delete id="delete" parameterType="int">

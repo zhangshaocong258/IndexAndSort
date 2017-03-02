@@ -11,6 +11,7 @@ public class Forward implements Comparable<Forward>{
     private String description;//摘要
     private int quality;//权重
     private String keyWords;//关键词
+    private String TF;
 
     public Forward() {}
 
@@ -20,6 +21,15 @@ public class Forward implements Comparable<Forward>{
         this.description = description;
         this.quality = quality;
         this.keyWords = keyWords;
+    }
+
+    public Forward(String title, String url, String description, int quality, String keyWords, String TF) {
+        this.title = title;
+        this.url = url;
+        this.description = description;
+        this.quality = quality;
+        this.keyWords = keyWords;
+        this.TF = TF;
     }
 
     @Override
@@ -77,5 +87,13 @@ public class Forward implements Comparable<Forward>{
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getTF() {
+        return TF;
+    }
+
+    public void setTF(String TF) {
+        this.TF = TF;
     }
 }

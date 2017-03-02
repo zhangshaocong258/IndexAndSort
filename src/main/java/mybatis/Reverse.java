@@ -8,7 +8,7 @@ public class Reverse implements Comparable<Reverse>{
     private int id;
     private String keyWords;
     private String IDF;
-    private String urls;
+    private String urls;//多个，中间用DELIMITER隔开
 
     public Reverse() {}
 
