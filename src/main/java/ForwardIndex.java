@@ -28,7 +28,7 @@ public class ForwardIndex {
     public static void main(String args[]) throws IOException{
         ForwardIndex forwardIndex = new ForwardIndex();
         forwardIndex.genForwardIndex(Config.path);
-        forwardIndex.insertToDB();
+        forwardIndex.insertListToDB();
     }
 
     private void genForwardIndex(String path) throws IOException{
@@ -49,7 +49,7 @@ public class ForwardIndex {
 
     private void operateDoc(File file) throws IOException{
         String fileName = file.getName();
-        System.out.println(file.getName());
+//        System.out.println(file.getName());
         Pattern question = Pattern.compile("^(www.zhihu.com_question_(.*))");
         Pattern collection = Pattern.compile("^(www.zhihu.com_collection_(.*))");
         Pattern topic = Pattern.compile("^(www.zhihu.com_topic_(.*))");
@@ -71,46 +71,56 @@ public class ForwardIndex {
         if (title.equals("")) {
             return;//标题不能为空
         }
-        System.out.println(title);
+//        System.out.println(title);
         String url = doc.select("url").first().text();
         String description;
-        int quality = -1;
+        int quality = 1;
         List<String> keyWordsTerm;
         String keyWords;
         String TF;
+        String quality_str;
         if (questionMatcher.matches()) {
-            quality = Integer.valueOf(doc.select("div.zh-question-followers-sidebar").select("strong").text());//问题关注数（Jsoup）
+            if (!(quality_str = doc.select("div.zh-question-followers-sidebar").select("strong").text()).equals("")) {
+                quality = Integer.valueOf(quality_str);//问题关注数（Jsoup）
+            }
             keyWordsTerm = HanLP.extractKeyword(title.split("-")[0].trim(), 10);
             keyWords = ListToString(keyWordsTerm);
             description = title;
             TF = String.format("%.2f",(double) 1 / keyWords.split(",").length);
             this.question.add(new Forward(title, url, description, quality, keyWords, TF));
-            System.out.println("question " + quality);
+//            System.out.println("question " + quality);
         } else if (collectionMatcher.matches()) {
-            quality = Integer.valueOf(doc.select("a[data-za-l=collection_followers_count]").text());//收藏关注数
+            if (!(quality_str = doc.select("a[data-za-l=collection_followers_count]").text()).equals("")) {
+                quality = Integer.valueOf(quality);//收藏关注数
+            }
             keyWords = description = null;
             this.collection.add(new Forward(title, url, description, quality, keyWords));
-            System.out.println("collection " + quality);
+//            System.out.println("collection " + quality);
         } else if (topicMatcher.matches()) {
-            quality = Integer.valueOf(doc.select("div.zm-topic-side-followers-info").select("strong").text());//话题关注者
+            if (!(quality_str = doc.select("div.zm-topic-side-followers-info").select("strong").text()).equals("")) {
+                quality = Integer.valueOf(quality_str);//话题关注者
+            }
             keyWords = description = null;
             this.topic.add(new Forward(title, url, description, quality, keyWords));
-            System.out.println("topic " + quality);
+//            System.out.println("topic " + quality);
         } else if (peopleMatcher.matches()) {
-            quality = Integer.valueOf(doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text().equals("") ?
-                    doc.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text() :
-                    doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());
-            //无法得到span的内容，只能得到h1的内容（张佳玮公众号：张佳玮写字的地方），做判断
-            if (doc.select("h1.ProfileHeader-title").text().trim().length() == title.length()) {
-                description = null;
-                keyWords = title;
-            } else {
-                description = doc.select("h1.ProfileHeader-title").text().substring(title.length());
-                keyWords = new StringBuilder().append(title).append(Config.DELIMITER).
-                        append(description).toString().toLowerCase();
+            if (!(quality_str = doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text()).equals("") &&
+                    !(quality_str = doc.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text()).equals("")) {
+                quality = Integer.valueOf(quality_str);
             }
+            description = "";
+            keyWords = title;
+            //无法得到span的内容，只能得到h1的内容（张佳玮公众号：张佳玮写字的地方），做判断
+//            if (doc.select("h1.ProfileHeader-title").text().trim().length() == title.length()) {
+//                description = null;
+//                keyWords = title;
+//            } else {
+//                description = doc.select("h1.ProfileHeader-title").text().substring(title.length());
+//                keyWords = new StringBuilder().append(title).append(Config.DELIMITER).
+//                        append(description).toString().toLowerCase();
+//            }
             this.people.add(new Forward(title, url, description, quality, keyWords));
-            System.out.println("people " + quality);
+//            System.out.println("people " + quality);
         }
 //        else if (orgMatcher.matches()) {
 //            quality = Integer.valueOf(doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text().equals("") ?
@@ -128,6 +138,25 @@ public class ForwardIndex {
 
     private String  ListToString(List<String> list) {
         return list.toString().substring(1, list.toString().length() - 1).toLowerCase();
+    }
+
+    public void insertListToDB() {
+        if (question.size() > 0) {
+            insertAllQuestion(question);
+        }
+
+        if (people.size() > 0) {
+            insertAllPeople(people);
+        }
+
+        if (topic.size() > 0) {
+            insertAllTopic(topic);
+
+        }
+        if (collection.size() > 0) {
+            insertAllCollection(collection);
+        }
+
     }
 
     public void insertToDB() {
@@ -154,6 +183,54 @@ public class ForwardIndex {
             }
         }
 
+    }
+
+    private void insertAllQuestion(List<Forward> content) {
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
+            forwardDao.insertAll(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
+    }
+
+    private void insertAllPeople(List<Forward> content) {
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
+            forwardDao.insertAll(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
+    }
+
+    private void insertAllTopic(List<Forward> content) {
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            TopicForwardDao forwardDao = sqlSession.getMapper(TopicForwardDao.class);
+            forwardDao.insertAll(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
+    }
+
+    private void insertAllCollection(List<Forward> content) {
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            CollectionForwardDao forwardDao = sqlSession.getMapper(CollectionForwardDao.class);
+            forwardDao.insertAll(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void insertQuestion(Forward content) {

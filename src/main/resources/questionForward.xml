@@ -5,20 +5,20 @@
 <mapper namespace="mybatis.QuestionForwardDao">
 
     <resultMap id="ForwardMap" type="Forward">
-        <id property="id" column="id" />
-        <result property="url" column="url" />
-        <result property="description" column="description" />
-        <result property="quality" column="quality" />
-        <result property="keyWords" column="keyWords" />
+        <id property="id" column="id"/>
+        <result property="url" column="url"/>
+        <result property="description" column="description"/>
+        <result property="quality" column="quality"/>
+        <result property="keyWords" column="keyWords"/>
     </resultMap>
 
-    <select id="selectById" resultType="Forward" >
+    <select id="selectById" resultType="Forward">
         select * from questionf where id = #{id}
     </select>
 
     <!--find_in_set暂时不可以，待解决-->
     <!--将mybatis升级到3.4.2，否则index无法重置-->
-    <select id="selectIn" resultType="Forward" >
+    <select id="selectIn" resultType="Forward">
         select * from questionf where id in
         <foreach collection="list" item="item" open="(" separator="," close=")">
             #{item}
@@ -29,7 +29,7 @@
         </foreach>
     </select>
 
-    <select id="selectAll" resultMap="ForwardMap" >
+    <select id="selectAll" resultMap="ForwardMap">
         select * from questionf
     </select>
 
@@ -38,7 +38,17 @@
         values(#{title},#{url},#{description},#{quality},#{keyWords},#{TF})
     </insert>
 
-    <update id="update" parameterType="Forward" >
+    <insert id="insertAll" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into questionf(title,url,description,quality,keyWords,TF) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.title},#{item.url},#{item.description},#{item.quality},#{item.keyWords},#{item.TF})
+        </foreach>
+    </insert>
+
+    <update id="update" parameterType="Forward">
         update questionf set title=#{title},url=#{url},description=#{description},quality=#{quality},keyWords=#{keyWords},TF=#{TF} where id=#{id}
     </update>
 

@@ -20,9 +20,13 @@ public class ReverseIndex {
     private Map<String, TreeSet<Forward>> peoplesMap = new HashMap<String, TreeSet<Forward>>();
     private Map<String, TreeSet<Forward>> topicsMap = new HashMap<String, TreeSet<Forward>>();
 
-    private Reverse rQuestions = new Reverse();
-    private Reverse rPeoples = new Reverse();
-    private Reverse rTopics = new Reverse();
+    private Reverse rQuestion = new Reverse();
+    private Reverse rPeople = new Reverse();
+    private Reverse rTopic = new Reverse();
+
+    private List<Reverse> rQuestionList = new ArrayList<Reverse>();
+    private List<Reverse> rPeopleList = new ArrayList<Reverse>();
+    private List<Reverse> rTopicList = new ArrayList<Reverse>();
 
 
     public static void main(String args[]) {
@@ -49,18 +53,22 @@ public class ReverseIndex {
         }
         int size = questionsMap.size();
         for (Map.Entry<String, TreeSet<Forward>> entry : questionsMap.entrySet()) {
-            rQuestions.setKeyWords(entry.getKey());
-            rQuestions.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
+//            rQuestion.setKeyWords(entry.getKey());
+//            rQuestion.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
+            String keyWords = entry.getKey();
+            String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
             StringBuilder stringBuilder = new StringBuilder();
-            //urls表示为89，阿里巴巴，0.33DELIMITER88，阿里巴巴，0.25
+            //urls表示为89，tf，idf DELIMITER 88，tf，idf
             for (Forward forward : entry.getValue()) {
-                stringBuilder.append(forward.getId()).append(",").append(entry.getKey()).append(",").
-                        append(forward.getTF()).append(",").append(rQuestions.getIDF()).append(Config.DELIMITER);
+                stringBuilder.append(forward.getId()).append(",").append(forward.getTF()).append(",").
+                        append(IDF).append(Config.DELIMITER);
             }
-            rQuestions.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
-            insertQuestion(rQuestions);
+//            rQuestion.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
+            String urls = stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER));
+            rQuestionList.add(new Reverse(keyWords, IDF, urls));
+//            insertQuestion(rQuestion);
         }
-
+        insertListQuestion(rQuestionList);
 
     }
 
@@ -76,15 +84,22 @@ public class ReverseIndex {
         }
         int size = peoplesMap.size();
         for (Map.Entry<String, TreeSet<Forward>> entry : peoplesMap.entrySet()) {
-            rPeoples.setKeyWords(entry.getKey());
-            rPeoples.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
+//            rPeople.setKeyWords(entry.getKey());
+//            rPeople.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
+            String keyWords = entry.getKey();
+            String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
+
             StringBuilder stringBuilder = new StringBuilder();
             for (Forward forward : entry.getValue()) {
                 stringBuilder.append(forward.getId()).append(Config.DELIMITER);
             }
-            rPeoples.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
-            insertPeople(rPeoples);
+//            rPeople.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
+            String urls = stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER));
+
+            rPeopleList.add(new Reverse(keyWords, IDF, urls));
+//            insertPeople(rPeople);
         }
+        insertListPeople(rPeopleList);
     }
 
     private void genRTopics() {
@@ -99,15 +114,42 @@ public class ReverseIndex {
         }
         int size = topicsMap.size();
         for (Map.Entry<String, TreeSet<Forward>> entry : topicsMap.entrySet()) {
-            rTopics.setKeyWords(entry.getKey());
-            rTopics.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
+//            rTopic.setKeyWords(entry.getKey());
+//            rTopic.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
+            String keyWords = entry.getKey();
+            String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
             StringBuilder stringBuilder = new StringBuilder();
             for (Forward forward : entry.getValue()) {
                 stringBuilder.append(forward.getId()).append(Config.DELIMITER);
             }
-            rTopics.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
-            insertTopic(rTopics);
+//            rTopic.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
+            String urls = stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER));
+            rTopicList.add(new Reverse(keyWords, IDF, urls));
+//            insertTopic(rTopic);
         }
+        insertListTopic(rTopicList);
+    }
+
+
+    private void insertListQuestion(List<Reverse> content) {
+        SqlSession sqlSession = getSessionFactory().openSession();
+        QuestionReverseDao reverseDao = sqlSession.getMapper(QuestionReverseDao.class);
+        reverseDao.insertAll(content);
+        sqlSession.commit();
+    }
+
+    private void insertListPeople(List<Reverse> content) {
+        SqlSession sqlSession = getSessionFactory().openSession();
+        PeopleReverseDao reverseDao = sqlSession.getMapper(PeopleReverseDao.class);
+        reverseDao.insertAll(content);
+        sqlSession.commit();
+    }
+
+    private void insertListTopic(List<Reverse> content) {
+        SqlSession sqlSession = getSessionFactory().openSession();
+        TopicReverseDao reverseDao = sqlSession.getMapper(TopicReverseDao.class);
+        reverseDao.insertAll(content);
+        sqlSession.commit();
     }
 
 

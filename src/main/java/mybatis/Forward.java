@@ -4,7 +4,7 @@ package mybatis;
  * Created by zsc on 2016/12/20.
  * 仅用权重作比较
  */
-public class Forward implements Comparable<Forward>{
+public class Forward implements Comparable<Forward> {
     private int id;
     private String title;//标题
     private String url;//网页地址
@@ -13,7 +13,8 @@ public class Forward implements Comparable<Forward>{
     private String keyWords;//关键词
     private String TF;
 
-    public Forward() {}
+    public Forward() {
+    }
 
     public Forward(String title, String url, String description, int quality, String keyWords) {
         this.title = title;

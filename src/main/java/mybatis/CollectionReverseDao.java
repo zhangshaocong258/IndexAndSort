@@ -12,6 +12,8 @@ public interface CollectionReverseDao {
 
     void insert(Reverse reverse);
 
+    void insertList(List<Reverse> reverses);
+
     void update(Reverse reverse);
 
     void delete(int Id);

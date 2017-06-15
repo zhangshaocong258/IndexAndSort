@@ -23,6 +23,16 @@
         insert into topicr(keyWords,IDF,urls)values(#{keyWords},#{IDF},#{urls})
     </insert>
 
+    <insert id="insertAll" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into topicr (keyWords,IDF,urls) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.keyWords},#{item.IDF},#{item.urls})
+        </foreach>
+    </insert>
+
     <update id="update" parameterType="Reverse" >
         update topicr set keyWords=#{keyWords}, IDF=#{IDF}, urls=#{urls} where id=#{id}
     </update>

@@ -25,6 +25,17 @@
         values(#{title},#{url},#{description},#{quality},#{keyWords})
     </insert>
 
+    <!--jdbcType=VARCHAR可有可无，是topicf写成了questionf！！！-->
+    <insert id="insertAll" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        <selectKey resultType ="java.lang.Integer" keyProperty= "id" order= "AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey >
+        insert into topicf(title,url,description,quality,keyWords) values
+        <foreach collection ="list" item ="item" index ="index" separator =",">
+            (#{item.title},#{item.url},#{item.description},#{item.quality},#{item.keyWords})
+        </foreach>
+    </insert>
+
     <update id="update" parameterType="Forward" >
         update topicf set title=#{title},url=#{url},description=#{description},quality=#{quality},keyWords=#{keyWords} where id=#{id}
     </update>

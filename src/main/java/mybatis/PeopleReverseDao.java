@@ -12,6 +12,8 @@ public interface PeopleReverseDao {
 
     void insert(Reverse reverse);
 
+    void insertAll(List<Reverse> reverses);
+
     void update(Reverse reverse);
 
     void delete(int Id);

@@ -4,13 +4,21 @@ package mybatis;
  * Created by zsc on 2016/12/22.
  * urls添加所有包含此关键词的序号
  */
-public class Reverse implements Comparable<Reverse>{
+public class Reverse implements Comparable<Reverse> {
     private int id;
     private String keyWords;
     private String IDF;
     private String urls;//多个，中间用DELIMITER隔开
 
-    public Reverse() {}
+    public Reverse() {
+    }
+
+    public Reverse(String keyWords, String IDF, String urls) {
+        this.keyWords = keyWords;
+        this.IDF = IDF;
+        this.urls = urls;
+    }
+
 
 //    public Reverse(String keyWords, String urls) {
 //        this.keyWords = keyWords;

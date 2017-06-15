@@ -12,6 +12,8 @@ public interface PeopleForwardDao {
 
     void insert(Forward forward);
 
+    void insertAll(List<Forward> forwardList);
+
     void update(Forward forward);
 
     void delete(int Id);
