@@ -144,6 +144,7 @@ public class ForwardIndex {
                 }
                 //关键词和搜索分词算法统一
                 keyWords = filter(HanLP.segment(title.split("-")[0].trim())).toString();
+                keyWords = keyWords.substring(1, keyWords.length() - 1);
 
                 //问题描述 点赞+用户名+描述
                 description = doc.select("meta[itemprop=upvoteCount]").first().attr("content") + Config.DELIMITER +
@@ -159,8 +160,8 @@ public class ForwardIndex {
                 } else {
                     return;
                 }
-
                 keyWords = filter(HanLP.segment(title.split("-")[0].trim())).toString();
+                keyWords = keyWords.substring(1, keyWords.length() - 1);
                 if (!(description = doc.select("div.zm-editable-content").text()).equals("")) {
                     if (doc.select("div.zm-editable-content").select("a[href=javascript:;]").text().equals("修改")) {
                         description = description.substring(0, description.length() - 2);
@@ -179,6 +180,7 @@ public class ForwardIndex {
 
                 description = doc.select("div.ProfileHeader-contentHead").select("span").get(1).text();
                 keyWords = filter(HanLP.segment(doc.select("div.ProfileHeader-contentHead").text())).toString();
+                keyWords = keyWords.substring(1, keyWords.length() - 1);
                 TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
                 this.people.add(new Forward(title, url, description, quality1, keyWords, TF));
 //                System.out.println("people " + quality);

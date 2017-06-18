@@ -75,11 +75,14 @@ public class ReverseIndex {
     private void genRPeoples() {
         selectAllPeoples();//得到people的正排索引
         for (Forward people : fPeoples) {
-            if (peoplesMap.containsKey(people.getKeyWords())) {
-                peoplesMap.get(people.getKeyWords()).add(people);
-            } else {
-                peoplesMap.put(people.getKeyWords(), new TreeSet<Forward>());
-                peoplesMap.get(people.getKeyWords()).add(people);
+            List<String> keyWords = Arrays.asList(people.getKeyWords().split(", "));//间隔是逗号加空格！！！
+            for (String keyWord : keyWords) {
+                if (peoplesMap.containsKey(keyWord)) {
+                    peoplesMap.get(keyWord).add(people);
+                } else {
+                    peoplesMap.put(keyWord, new TreeSet<Forward>());
+                    peoplesMap.get(keyWord).add(people);
+                }
             }
         }
         int size = peoplesMap.size();
@@ -88,7 +91,7 @@ public class ReverseIndex {
 //            rPeople.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
             String keyWords = entry.getKey();
             String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
-
+            System.out.println(IDF);
             StringBuilder stringBuilder = new StringBuilder();
             for (Forward forward : entry.getValue()) {
                 stringBuilder.append(forward.getId()).append(Config.DELIMITER);
@@ -105,11 +108,14 @@ public class ReverseIndex {
     private void genRTopics() {
         selectAllTopics();//得到people的正排索引
         for (Forward topic : fTopics) {
-            if (topicsMap.containsKey(topic.getTitle())) {
-                topicsMap.get(topic.getTitle()).add(topic);
-            } else {
-                topicsMap.put(topic.getTitle(), new TreeSet<Forward>());
-                topicsMap.get(topic.getTitle()).add(topic);
+            List<String> keyWords = Arrays.asList(topic.getKeyWords().split(", "));//间隔是逗号加空格！！！
+            for (String keyWord : keyWords) {
+                if (topicsMap.containsKey(keyWord)) {
+                    topicsMap.get(keyWord).add(topic);
+                } else {
+                    topicsMap.put(keyWord, new TreeSet<Forward>());
+                    topicsMap.get(keyWord).add(topic);
+                }
             }
         }
         int size = topicsMap.size();
