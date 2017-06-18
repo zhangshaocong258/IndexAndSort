@@ -1,4 +1,5 @@
 import com.hankcs.hanlp.HanLP;
+import com.hankcs.hanlp.seg.common.Term;
 import mybatis.*;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -25,13 +26,59 @@ public class ForwardIndex {
     private List<Forward> topic = new ArrayList<Forward>();
     private List<Forward> collection = new ArrayList<Forward>();
 
-    public static void main(String args[]) throws IOException{
+    public static void main(String args[]) throws IOException {
         ForwardIndex forwardIndex = new ForwardIndex();
         forwardIndex.genForwardIndex(Config.path);
         forwardIndex.insertListToDB();
     }
 
-    private void genForwardIndex(String path) throws IOException{
+    private static List<Term> filter(List<Term> termList) {
+        List<Term> temp = new ArrayList<Term>();
+        for (int i = 0; i < termList.size(); i++) {
+            Term term = termList.get(i);
+            String nature = term.nature != null ? term.nature.toString() : "空";
+            char firstChar = nature.charAt(0);
+            switch (firstChar) {
+                case '1': //自定义
+                    break;
+                case 'b': //区别词 正 副
+                case 'z': //状态词
+                case 'r': //代词 怎样 如何
+                case 'm':
+                case 'c':
+                case 'e':
+                case 'o':
+                case 'p':
+                case 'q':
+                case 'u':
+                case 'w':
+                case 'y':
+                    temp.add(term);
+                    break;
+                case 'd':
+                case 'f':
+                case 'g':
+                case 'h':
+                case 'i':
+                case 'j':
+                case 'k':
+                case 'l':
+                case 'n':
+                case 's':
+                case 't':
+                case 'v':
+                case 'x':
+                default:
+                    if (term.word.length() == 1) {//长度为1，删除，可以理解为没有分出来词，因此删除，最后查询时分出的词，也可以删除停用词
+                        temp.add(term);
+                    }
+            }
+        }
+        termList.removeAll(temp);
+        return termList;
+    }
+
+    private void genForwardIndex(String path) throws IOException {
         File folder = new File(path);
         if (folder.isFile()) {
             operateDoc(folder);
@@ -47,7 +94,7 @@ public class ForwardIndex {
         }
     }
 
-    private void operateDoc(File file) throws IOException{
+    private void operateDoc(File file) throws IOException {
         String fileName = file.getName();
 //        System.out.println(file.getName());
         Pattern question = Pattern.compile("^(www.zhihu.com_question_(.*))");
@@ -69,74 +116,99 @@ public class ForwardIndex {
         Document doc = Jsoup.parse(file, "UTF-8");
         String title = doc.title().split("-")[0].trim().toLowerCase();
         if (title.equals("")) {
+            System.out.println("标题为空");
             return;//标题不能为空
         }
 //        System.out.println(title);
         String url = doc.select("url").first().text();
         String description;
-        int quality = 1;
-        List<String> keyWordsTerm;
+        int quality1 = 1;
+        int quality2 = 1;
+//        String keyWordsTerm;
         String keyWords;
         String TF;
         String quality_str;
-        if (questionMatcher.matches()) {
-            if (!(quality_str = doc.select("div.zh-question-followers-sidebar").select("strong").text()).equals("")) {
-                quality = Integer.valueOf(quality_str);//问题关注数（Jsoup）
+
+        //格式不匹配的直接放弃
+        try {
+            if (questionMatcher.matches()) {
+                /*if (!(quality_str = doc.select("div.NumberBoard-value").text()).equals("")) {
+                    quality1 += Integer.valueOf(quality_str.split(" ")[0]);//问题关注数
+                    quality2 += Integer.valueOf(quality_str.split(" ")[1]);//问题被浏览
+                }
+                quality1 += Integer.valueOf(doc.select("div.QuestionHeader").first().select("meta[itemprop=followerCount]").attr("content"));//问题关注数
+                quality2 += Integer.valueOf(doc.select("div.QuestionHeader").first().select("meta[itemprop=visitsCount]").attr("content"));//问题被浏览
+                */
+                if (!(quality_str = doc.select("div.QuestionHeader").first().select("meta[itemprop=followerCount]").attr("content")).equals("")) {
+                    quality1 += Integer.valueOf(quality_str);//问题关注数
+                }
+                //关键词和搜索分词算法统一
+                keyWords = filter(HanLP.segment(title.split("-")[0].trim())).toString();
+
+                //问题描述 点赞+用户名+描述
+                description = doc.select("meta[itemprop=upvoteCount]").first().attr("content") + Config.DELIMITER +
+                        doc.select("div.AuthorInfo-content").first().select("a.UserLink-link").text() + Config.DELIMITER +
+                        doc.select("div.RichContent-inner").first().text().substring(0, doc.select("div.RichContent-inner").first().text().length()
+                                > 100 ? 100 : doc.select("div.RichContent-inner").first().text().length()) + "...";
+                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
+                this.question.add(new Forward(title, url, description, quality1, keyWords, TF));
+//                System.out.println("question " + quality);
+            } else if (topicMatcher.matches()) {
+                if (!(quality_str = doc.select("div.zm-topic-side-followers-info").select("strong").text()).equals("")) {
+                    quality1 += Integer.valueOf(quality_str);//话题关注者
+                } else {
+                    return;
+                }
+
+                keyWords = filter(HanLP.segment(title.split("-")[0].trim())).toString();
+                if (!(description = doc.select("div.zm-editable-content").text()).equals("")) {
+                    if (doc.select("div.zm-editable-content").select("a[href=javascript:;]").text().equals("修改")) {
+                        description = description.substring(0, description.length() - 2);
+                    }
+                } else {
+                    description = "空";
+                }
+                this.topic.add(new Forward(title, url, description, quality1, keyWords));
+//                System.out.println("topic " + quality);
+            } else if (peopleMatcher.matches()) {
+                if (!(quality_str = doc.select("div.ProfileHeader").first().select("meta[itemprop=followerCount]").attr("content")).equals("")) {
+                    quality1 += Integer.valueOf(quality_str);
+                } else {
+                    return;
+                }
+
+                description = doc.select("div.ProfileHeader-contentHead").select("span").get(1).text();
+                keyWords = filter(HanLP.segment(doc.select("div.ProfileHeader-contentHead").text())).toString();
+                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
+                this.people.add(new Forward(title, url, description, quality1, keyWords, TF));
+//                System.out.println("people " + quality);
             }
-            keyWordsTerm = HanLP.extractKeyword(title.split("-")[0].trim(), 10);
-            keyWords = ListToString(keyWordsTerm);
-            description = title;
-            TF = String.format("%.2f",(double) 1 / keyWords.split(",").length);
-            this.question.add(new Forward(title, url, description, quality, keyWords, TF));
-//            System.out.println("question " + quality);
-        } else if (collectionMatcher.matches()) {
-            if (!(quality_str = doc.select("a[data-za-l=collection_followers_count]").text()).equals("")) {
-                quality = Integer.valueOf(quality);//收藏关注数
+            /*else if (orgMatcher.matches()) {
+                quality = Integer.valueOf(doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text().equals("") ?
+                        doc.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text() :
+                        doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());//关注者
+                keyWords = title;
+                this.people.add(new Forward(title, url, description, quality, keyWords));
+                System.out.println("org " + quality);
+            } else if (collectionMatcher.matches()) {
+                if (!(quality_str = doc.select("a[data-za-l=collection_followers_count]").text()).equals("")) {
+                    quality1 = Integer.valueOf(quality1);//收藏关注数
+                }
+                keyWords = description = null;
+                this.collection.add(new Forward(title, url, description, quality1, quality2, keyWords));
+                System.out.println("collection " + quality);
             }
-            keyWords = description = null;
-            this.collection.add(new Forward(title, url, description, quality, keyWords));
-//            System.out.println("collection " + quality);
-        } else if (topicMatcher.matches()) {
-            if (!(quality_str = doc.select("div.zm-topic-side-followers-info").select("strong").text()).equals("")) {
-                quality = Integer.valueOf(quality_str);//话题关注者
-            }
-            keyWords = description = null;
-            this.topic.add(new Forward(title, url, description, quality, keyWords));
-//            System.out.println("topic " + quality);
-        } else if (peopleMatcher.matches()) {
-            if (!(quality_str = doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text()).equals("") &&
-                    !(quality_str = doc.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text()).equals("")) {
-                quality = Integer.valueOf(quality_str);
-            }
-            description = "";
-            keyWords = title;
-            //无法得到span的内容，只能得到h1的内容（张佳玮公众号：张佳玮写字的地方），做判断
-//            if (doc.select("h1.ProfileHeader-title").text().trim().length() == title.length()) {
-//                description = null;
-//                keyWords = title;
-//            } else {
-//                description = doc.select("h1.ProfileHeader-title").text().substring(title.length());
-//                keyWords = new StringBuilder().append(title).append(Config.DELIMITER).
-//                        append(description).toString().toLowerCase();
-//            }
-            this.people.add(new Forward(title, url, description, quality, keyWords));
-//            System.out.println("people " + quality);
-        }
-//        else if (orgMatcher.matches()) {
-//            quality = Integer.valueOf(doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text().equals("") ?
-//                    doc.select("a[href~=(.*)followers]").select("div.NumberBoard-value").text() :
-//                    doc.select("a[href~=(.*)followers]").select("div.Profile-followStatusValue").text());//关注者
-//            keyWords = title;
-//            this.people.add(new Forward(title, url, description, quality, keyWords));
-//            System.out.println("org " + quality);
-//        }
-        if (quality == -1) {
-            throw new NullPointerException("获取特征失败 " + fileName);
+            if (quality1 == -1) {
+                throw new NullPointerException("获取特征失败 " + fileName);
+            }*/
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return;
         }
 
     }
 
-    private String  ListToString(List<String> list) {
+    private String ListToString(List<String> list) {
         return list.toString().substring(1, list.toString().length() - 1).toLowerCase();
     }
 
