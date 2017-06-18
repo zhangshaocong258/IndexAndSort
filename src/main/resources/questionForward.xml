@@ -8,7 +8,7 @@
         <id property="id" column="id"/>
         <result property="url" column="url"/>
         <result property="description" column="description"/>
-        <result property="quality" column="quality"/>
+        <result property="quality1" column="quality1"/>
         <result property="keyWords" column="keyWords"/>
     </resultMap>
 
@@ -34,22 +34,22 @@
     </select>
 
     <insert id="insert" parameterType="Forward" useGeneratedKeys="true" keyProperty="id">
-        insert into questionf(title,url,description,quality,keyWords,TF)
-        values(#{title},#{url},#{description},#{quality},#{keyWords},#{TF})
+        insert into questionf(title,url,description,quality1,keyWords,TF)
+        values(#{title},#{url},#{description},#{quality1},#{keyWords},#{TF})
     </insert>
 
     <insert id="insertAll" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
         <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into questionf(title,url,description,quality,keyWords,TF) values
+        insert into questionf(title,url,description,quality1,keyWords,TF) values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.title},#{item.url},#{item.description},#{item.quality},#{item.keyWords},#{item.TF})
+            (#{item.title},#{item.url},#{item.description},#{item.quality1},#{item.keyWords},#{item.TF})
         </foreach>
     </insert>
 
     <update id="update" parameterType="Forward">
-        update questionf set title=#{title},url=#{url},description=#{description},quality=#{quality},keyWords=#{keyWords},TF=#{TF} where id=#{id}
+        update questionf set title=#{title},url=#{url},description=#{description},quality1=#{quality1},keyWords=#{keyWords},TF=#{TF} where id=#{id}
     </update>
 
     <delete id="delete" parameterType="int">

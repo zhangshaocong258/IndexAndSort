@@ -8,7 +8,7 @@
         <id property="id" column="id" />
         <result property="url" column="url" />
         <result property="description" column="description" />
-        <result property="quality" column="quality" />
+        <result property="quality1" column="quality1" />
         <result property="keyWords" column="keyWords" />
     </resultMap>
 
@@ -21,8 +21,8 @@
     </select>
 
     <insert id="insert" parameterType="Forward" useGeneratedKeys="true" keyProperty="id">
-        insert into topicf(title,url,description,quality,keyWords)
-        values(#{title},#{url},#{description},#{quality},#{keyWords})
+        insert into topicf(title,url,description,quality1,keyWords)
+        values(#{title},#{url},#{description},#{quality1},#{keyWords})
     </insert>
 
     <!--jdbcType=VARCHAR可有可无，是topicf写成了questionf！！！-->
@@ -30,14 +30,14 @@
         <selectKey resultType ="java.lang.Integer" keyProperty= "id" order= "AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey >
-        insert into topicf(title,url,description,quality,keyWords) values
+        insert into topicf(title,url,description,quality1,keyWords) values
         <foreach collection ="list" item ="item" index ="index" separator =",">
-            (#{item.title},#{item.url},#{item.description},#{item.quality},#{item.keyWords})
+            (#{item.title},#{item.url},#{item.description},#{item.quality1},#{item.keyWords})
         </foreach>
     </insert>
 
     <update id="update" parameterType="Forward" >
-        update topicf set title=#{title},url=#{url},description=#{description},quality=#{quality},keyWords=#{keyWords} where id=#{id}
+        update topicf set title=#{title},url=#{url},description=#{description},quality1=#{quality1},keyWords=#{keyWords} where id=#{id}
     </update>
 
     <delete id="delete" parameterType="int">
