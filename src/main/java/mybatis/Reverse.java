@@ -27,7 +27,11 @@ public class Reverse implements Comparable<Reverse> {
 
     @Override
     public int compareTo(Reverse reverse) {
-        return reverse.IDF.compareTo(IDF);
+        if (Double.valueOf(IDF) < Double.valueOf(reverse.IDF)) {
+            return 1;
+        } else {
+            return -1;
+        }
     }
 
     public int getId() {

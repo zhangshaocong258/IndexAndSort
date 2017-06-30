@@ -61,7 +61,7 @@ public class ReverseIndex {
             //urls表示为89，tf，idf DELIMITER 88，tf，idf
             for (Forward forward : entry.getValue()) {
                 stringBuilder.append(forward.getId()).append(",").append(forward.getTF()).append(",").
-                        append(IDF).append(Config.DELIMITER);
+                        append(IDF).append(",").append(forward.getQuality()).append(Config.DELIMITER);
             }
 //            rQuestion.setUrls(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
             String urls = stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER));
@@ -91,7 +91,7 @@ public class ReverseIndex {
 //            rPeople.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
             String keyWords = entry.getKey();
             String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
-            System.out.println(IDF);
+//            System.out.println(IDF);
             StringBuilder stringBuilder = new StringBuilder();
             for (Forward forward : entry.getValue()) {
                 stringBuilder.append(forward.getId()).append(Config.DELIMITER);
