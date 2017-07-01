@@ -58,7 +58,7 @@ public class TopicSE {
         //得到按序排列的url集合
         List<String> sortedUrls = new ArrayList<String>();
         for (Reverse reverse : keyWords) {
-            sortedUrls.add(reverse.getUrls());
+            sortedUrls.add(reverse.getPageID());
         }
 
         //得到最终排序

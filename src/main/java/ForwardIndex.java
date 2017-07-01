@@ -146,7 +146,8 @@ public class ForwardIndex {
             }
             String url = doc.select("url").first().text();
             String description;
-            int quality = 1;
+            int quality = 11;
+            int tQuality = 1;
             int quality2 = 1;
             String keyWords;
             String TF;
@@ -164,14 +165,16 @@ public class ForwardIndex {
 
                 try {
                     //老页面
-                    if (!(quality_str = doc.select("div.zh-question-followers-sidebar").select("strong").text()).equals("")) {
-                        quality = Integer.valueOf(quality_str);//问题关注数（Jsoup）
+                    if (!(quality_str = doc.select("div.zh-question-followers-sidebar").first().select("strong").text()).equals("")) {
+                        quality = Integer.valueOf(new StringBuilder().append(quality_str.length()).append(quality_str).toString());//问题关注数（Jsoup）
+                        tQuality = Integer.valueOf(quality_str);
                     }
 
                 } catch (NullPointerException e) {
                     //新页面
-                    if (!(quality_str = doc.select("div.QuestionHeader").first().select("meta[itemprop=followerCount]").attr("content")).equals("")) {
-                        quality += Integer.valueOf(quality_str);//问题关注数
+                    if (!(quality_str = doc.select("div.NumberBoard-value").first().text()).equals("")) {
+                        quality = Integer.valueOf(new StringBuilder().append(quality_str.length()).append(quality_str).toString());//问题关注数（Jsoup）
+                        tQuality = Integer.valueOf(quality_str);
                     }
 //                    e.printStackTrace();
                 }
@@ -198,8 +201,8 @@ public class ForwardIndex {
                                     > 300 ? 300 : doc.select("div.RichContent-inner").first().text().length()) + "...";
                 }
 
-                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
-                this.questionSet.add(new Forward(title, url, description, quality, keyWords, TF));
+//                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
+                this.questionSet.add(new Forward(title, url, description, quality, tQuality, keyWords));
             } else if (topicMatcher.matches()) {
                 if (!(quality_str = doc.select("div.zm-topic-side-followers-info").select("strong").text()).equals("")) {
                     quality += Integer.valueOf(quality_str);//话题关注者
@@ -236,8 +239,8 @@ public class ForwardIndex {
                     System.out.println("people " + title);
                     return;
                 }
-                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
-                this.peopleSet.add(new Forward(title, url, description, quality, keyWords, TF));
+//                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
+                this.peopleSet.add(new Forward(title, url, description, quality, keyWords));
 //                System.out.println("people " + quality);
             }
             /*else if (orgMatcher.matches()) {

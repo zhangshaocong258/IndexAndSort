@@ -64,7 +64,7 @@ public class QuestionSE {
         //得到按序排列的url集合，只要string
         List<String> sortedUrls = new ArrayList<String>();//1DELIMITER26DELIMITER48,84DELIMITER85
         for (Reverse reverse : keyWords) {
-            sortedUrls.add(reverse.getUrls());
+            sortedUrls.add(reverse.getPageID());
         }
 
         //得到最终排序

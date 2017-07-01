@@ -8,7 +8,7 @@
         <id property="id" column="id" />
         <result property="keyWords" column="keyWords" />
         <result property="IDF" column="IDF" />
-        <result property="urls" column="urls" />
+        <result property="pageID" column="pageID" />
     </resultMap>
 
     <select id="selectById" resultType="Reverse" >
@@ -20,21 +20,21 @@
     </select>
 
     <insert id="insert" parameterType="Reverse" useGeneratedKeys="true" keyProperty="id">
-        insert into peopler(keyWords,IDF,urls)values(#{keyWords},#{IDF},#{urls})
+        insert into peopler(keyWords,IDF,pageID)values(#{keyWords},#{IDF},#{pageID})
     </insert>
 
     <insert id="insertAll" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
         <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into peopler(keyWords,IDF,urls) values
+        insert into peopler(keyWords,IDF,pageID) values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.keyWords},#{item.IDF},#{item.urls})
+            (#{item.keyWords},#{item.IDF},#{item.pageID})
         </foreach>
     </insert>
 
     <update id="update" parameterType="Reverse" >
-        update peopler set keyWords=#{keyWords}, IDF=#{IDF}, urls=#{urls} where id=#{id}
+        update peopler set keyWords=#{keyWords}, IDF=#{IDF}, pageID=#{pageID} where id=#{id}
     </update>
 
     <delete id="delete" parameterType="int">
