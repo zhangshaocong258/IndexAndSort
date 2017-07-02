@@ -24,4 +24,6 @@ public interface QuestionForwardDao {
     void update(Forward forward);
 
     void delete(int Id);
+
+    int getCount();
 }

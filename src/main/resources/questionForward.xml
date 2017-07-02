@@ -59,4 +59,8 @@
     <delete id="delete" parameterType="int">
         delete from questionf where id = #{id}
     </delete>
+
+    <select id="getCount" resultType="int">
+        select count(*) from questionf
+    </select>
 </mapper>
