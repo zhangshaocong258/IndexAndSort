@@ -1,5 +1,7 @@
 package mybatis;
 
+import org.apache.ibatis.annotations.Param;
+
 import java.util.List;
 
 /**
@@ -10,6 +12,8 @@ public interface QuestionForwardDao {
     Forward selectById (int Id);
 
     List<Forward> selectIn(List<Integer> Ids);
+
+    List<Forward> selectByLimit(@Param("offset") int offset, @Param("limit") int limit);
 
     List<Forward> selectAll();
 

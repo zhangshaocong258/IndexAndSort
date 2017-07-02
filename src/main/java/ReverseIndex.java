@@ -140,24 +140,39 @@ public class ReverseIndex {
 
 
     private void insertListQuestion(List<Reverse> content) {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        QuestionReverseDao reverseDao = sqlSession.getMapper(QuestionReverseDao.class);
-        reverseDao.insertAll(content);
-        sqlSession.commit();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            QuestionReverseDao reverseDao = sqlSession.getMapper(QuestionReverseDao.class);
+            reverseDao.insertAll(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void insertListPeople(List<Reverse> content) {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        PeopleReverseDao reverseDao = sqlSession.getMapper(PeopleReverseDao.class);
-        reverseDao.insertAll(content);
-        sqlSession.commit();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            PeopleReverseDao reverseDao = sqlSession.getMapper(PeopleReverseDao.class);
+            reverseDao.insertAll(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void insertListTopic(List<Reverse> content) {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        TopicReverseDao reverseDao = sqlSession.getMapper(TopicReverseDao.class);
-        reverseDao.insertAll(content);
-        sqlSession.commit();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            TopicReverseDao reverseDao = sqlSession.getMapper(TopicReverseDao.class);
+            reverseDao.insertAll(content);
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
 
@@ -192,21 +207,39 @@ public class ReverseIndex {
 
 
     private void selectAllQuestion() {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
-        fQuestions = forwardDao.selectAll();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
+            fQuestions = forwardDao.selectAll();
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void selectAllPeoples() {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
-        fPeoples = forwardDao.selectAll();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            PeopleForwardDao forwardDao = sqlSession.getMapper(PeopleForwardDao.class);
+            fPeoples = forwardDao.selectAll();
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
     private void selectAllTopics() {
-        SqlSession sqlSession = getSessionFactory().openSession();
-        TopicForwardDao forwardDao = sqlSession.getMapper(TopicForwardDao.class);
-        fTopics = forwardDao.selectAll();
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            TopicForwardDao forwardDao = sqlSession.getMapper(TopicForwardDao.class);
+            fTopics = forwardDao.selectAll();
+            sqlSession.commit();
+        } finally {
+            sqlSession.close();
+        }
     }
 
 

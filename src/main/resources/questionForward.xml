@@ -33,6 +33,10 @@
         select * from questionf
     </select>
 
+    <select id="selectByLimit" resultMap="ForwardMap">
+        select * from questionf limit #{offset},#{limit}
+    </select>
+
     <insert id="insert" parameterType="Forward" useGeneratedKeys="true" keyProperty="id">
         insert into questionf(title,url,description,quality,tQuality,keyWords)
         values(#{title},#{url},#{description},#{quality},#{tQuality},#{keyWords})

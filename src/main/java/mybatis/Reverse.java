@@ -42,6 +42,16 @@ public class Reverse implements Comparable<Reverse> {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return keyWords.equals(((Reverse) obj).getKeyWords());
+    }
+
+    @Override
+    public int hashCode() {
+        return keyWords.hashCode();
+    }
+
     public int getId() {
         return id;
     }

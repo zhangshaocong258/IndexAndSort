@@ -45,6 +45,16 @@ public class Forward implements Comparable<Forward> {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        return url.equals(((Forward) obj).getUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return url.hashCode();
+    }
+
     public int getId() {
         return id;
     }
