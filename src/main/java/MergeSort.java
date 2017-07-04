@@ -9,6 +9,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by zsc on 2017/7/2.
@@ -16,9 +17,9 @@ import java.util.*;
  */
 public class MergeSort {
 
-    private static String toBeSorted = "E:\\sort\\toBeSorted";
-    private static String sorted = "E:\\sort\\sorted";
-    private static String finalPath = "E:\\sort\\finalPath";
+    private static String toBeSorted = "E:\\SearchEngine\\toBeSorted";
+    private static String sorted = "E:\\SearchEngine\\sorted";
+    private static String finalPath = "E:\\SearchEngine\\finalPath\\final.txt";
     private static String DELIMITER = "\t";
 
     private static List<Forward> fQuestions;
@@ -26,14 +27,24 @@ public class MergeSort {
 
     private static List<String> qList;
     private static List<File> fileList = new ArrayList<File>();
+    private static int count;
+
+    private static String minKey = "!";
+    private static String maxKey = "龻";//unicode中找一个靠后的
+
 
     public static void main(String args[]) throws IOException {
         genToBeSorted();
         genSorted();
+        genReverseIndex();
     }
 
-    private static void genReverseIndex() {
-
+    private static void genReverseIndex() throws IOException {
+        fileList.clear();
+        count = getCount();
+        System.out.println(count);
+        genFileList(sorted);
+        multiWayMergeSort(fileList, finalPath);
     }
 
     //将每个文件进行内部排序
@@ -47,7 +58,16 @@ public class MergeSort {
             while ((string = br.readLine()) != null) {
                 qList.add(string);
             }
-            Collections.sort(qList);
+            Collections.sort(qList, new Comparator<String>() {
+                @Override
+                public int compare(String str1, String str2) {
+                    if (str1.split(Pattern.quote(DELIMITER))[0].compareTo(str2.split(Pattern.quote(DELIMITER))[0]) < 0) {
+                        return -1;
+                    } else {
+                        return 1;
+                    }
+                }
+            });
             File output = new File(sorted + File.separator + i + ".txt");
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output)));
             for (String str : qList) {
@@ -62,8 +82,6 @@ public class MergeSort {
 
     //得到未排序的倒排文件
     private static void genToBeSorted() throws IOException {
-        int count = getCount();
-        System.out.println(count);
         for (int i = 0; i < 10; i++) {
             fQuestions = selectQuestion(2000 * i, 2000);
             questionsMap = new HashMap<String, TreeSet<Forward>>();
@@ -83,7 +101,6 @@ public class MergeSort {
                 file.createNewFile();
             }
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-            int size = questionsMap.size();
             for (Map.Entry<String, TreeSet<Forward>> entry : questionsMap.entrySet()) {
                 String keyWords = entry.getKey();
 //                String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
@@ -102,8 +119,103 @@ public class MergeSort {
             }
             bw.close();
         }
+    }
 
+    private static void multiWayMergeSort(List<File> files, String output) throws IOException {
+        int n = files.size();
+        String[] b = new String[n + 1];
 
+        List<BufferedReader> rList = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(files.get(i))));
+            rList.add(br);
+        }
+
+        for (int i = 0; i < n; i++) {
+            String str;
+            if ((str = rList.get(i).readLine()) != null) {
+                b[i] = str;
+            } else {
+                b[i] = maxKey;
+            }
+        }
+
+        int[] ls = new int[n];
+
+        createLoserTree(ls, b, n);
+//        for (int i = 0; i < b.length; i++) {
+//            System.out.println(b[i]);
+//        }
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(output))));
+        String temp = null;
+        while (b[ls[0]] != maxKey) {
+            if (temp == null) {//判断第一次
+                temp = b[ls[0]];
+                String str;
+                if ((str = rList.get(ls[0]).readLine()) != null) {
+                    b[ls[0]] = str;
+                } else {
+                    b[ls[0]] = maxKey;
+                }
+                adjust(ls, b, n, ls[0]);
+                continue;
+            } else {
+                String[] tempArray = temp.split(Pattern.quote(DELIMITER));
+                String[] bArray = b[ls[0]].split(Pattern.quote(DELIMITER));
+                if (tempArray[0].equals(bArray[0])) {
+                    temp = new StringBuilder().append(tempArray[0]).append(DELIMITER).append(tempArray[1]).append(Config.DELIMITER).
+                            append(bArray[1]).append(DELIMITER).append(tempArray[2]).append(Config.DELIMITER).append(bArray[2]).toString();
+                    String str;
+                    if ((str = rList.get(ls[0]).readLine()) != null) {
+                        b[ls[0]] = str;
+                    } else {
+                        b[ls[0]] = maxKey;
+                    }
+                } else {
+                    temp = new StringBuilder().append(temp).append(DELIMITER).
+                            append(String.format("%.2f", Math.log((double) (count / (temp.split(Pattern.quote(DELIMITER))[1].split(Pattern.quote(Config.DELIMITER))).length)) / Math.log(2))).toString();
+                    bw.write(temp);
+                    bw.newLine();
+                    bw.flush();
+                    temp = b[ls[0]];//位置和下面颠倒了
+                    String str;
+                    if ((str = rList.get(ls[0]).readLine()) != null) {
+                        b[ls[0]] = str;
+                    } else {
+                        b[ls[0]] = maxKey;
+                    }
+                }
+            }
+            adjust(ls, b, n, ls[0]);
+        }
+        bw.write(temp);//收尾
+        bw.flush();
+        bw.close();
+        for (BufferedReader br : rList) {
+            br.close();
+        }
+
+    }
+
+    private static void createLoserTree(int[] ls, String[] b, int n) {
+        b[n] = minKey;
+        for (int i = 0; i < n; i++) {
+            ls[i] = n;
+        }
+        for (int i = n - 1; i >= 0; i--) {
+            adjust(ls, b, n, i);
+        }
+    }
+
+    private static void adjust(int[] ls, String[] b, int n, int s) {
+        for (int t = (s + n) / 2; t > 0; t = t / 2) {//t=(s+k)，得到与之相连ls数组的索引
+            if (b[s].split(Pattern.quote(DELIMITER))[0].compareTo(b[ls[t]].split(Pattern.quote(DELIMITER))[0]) >= 1) {//父亲节点
+                int temp = s; //s永远是指向这一轮比赛最小节点
+                s = ls[t];
+                ls[t] = temp;
+            }
+        }
+        ls[0] = s;//将最小节点的索引存储在ls[0]
     }
 
     private static void genFileList(String path) {
