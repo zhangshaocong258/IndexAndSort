@@ -1,7 +1,4 @@
-import mybatis.Forward;
-import mybatis.QuestionForwardDao;
-import mybatis.Reverse;
-import mybatis.TopicForwardDao;
+import mybatis.*;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -31,12 +28,26 @@ public class MergeSort {
 
     private static String minKey = "!";
     private static String maxKey = "龻";//unicode中找一个靠后的
+    private static List<Reverse> rQuestionList = new ArrayList<Reverse>();
 
 
     public static void main(String args[]) throws IOException {
-        genToBeSorted();
-        genSorted();
-        genReverseIndex();
+//        genToBeSorted();
+//        genSorted();
+//        genReverseIndex();
+//        insertReverseIndex();
+    }
+
+    private static void insertReverseIndex() throws IOException {
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(finalPath))));
+        String str;
+        while ((str = br.readLine()) != null) {
+            rQuestionList.add(new Reverse(str.split(Pattern.quote(DELIMITER))[0], str.split(Pattern.quote(DELIMITER))[3],
+                    str.split(Pattern.quote(DELIMITER))[1], str.split(Pattern.quote(DELIMITER))[2]));
+        }
+        br.close();
+        insertListQuestion(rQuestionList);
     }
 
     private static void genReverseIndex() throws IOException {
@@ -103,7 +114,6 @@ public class MergeSort {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
             for (Map.Entry<String, TreeSet<Forward>> entry : questionsMap.entrySet()) {
                 String keyWords = entry.getKey();
-//                String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
                 StringBuilder stringBuilder = new StringBuilder();
                 StringBuilder stringBuilder2 = new StringBuilder();
                 for (Forward forward : entry.getValue()) {
@@ -119,6 +129,42 @@ public class MergeSort {
             }
             bw.close();
         }
+    }
+
+    private static String[] merge(String[] a, String[] b) {
+        int left = a.length;
+        int right = b.length;
+        int i = 0, j = 0;
+        String[] str = new String[2];
+        StringBuilder qualityAndPID = new StringBuilder();
+        StringBuilder PID = new StringBuilder();
+        while (i < left && j < right) {
+            //从大到小排序
+            if (a[i].compareTo(b[j]) >= 1) {
+                qualityAndPID.append(a[i]).append(Config.DELIMITER);
+                PID.append(a[i].split(",")[1]).append(Config.DELIMITER);
+                i++;
+            } else {
+                qualityAndPID.append(b[j]).append(Config.DELIMITER);
+                PID.append(b[j].split(",")[1]).append(Config.DELIMITER);
+                j++;
+            }
+        }
+        while (i < left) {
+            qualityAndPID.append(a[i]).append(Config.DELIMITER);
+            PID.append(a[i].split(",")[1]).append(Config.DELIMITER);
+            i++;
+
+        }
+        while (j < right) {
+            qualityAndPID.append(b[j]).append(Config.DELIMITER);
+            PID.append(b[j].split(",")[1]).append(Config.DELIMITER);
+            j++;
+        }
+        str[0] = PID.toString().substring(0, PID.toString().length() - 1);
+        str[1] = qualityAndPID.toString().substring(0, qualityAndPID.toString().length() - 1);
+
+        return str;
     }
 
     private static void multiWayMergeSort(List<File> files, String output) throws IOException {
@@ -163,8 +209,10 @@ public class MergeSort {
                 String[] tempArray = temp.split(Pattern.quote(DELIMITER));
                 String[] bArray = b[ls[0]].split(Pattern.quote(DELIMITER));
                 if (tempArray[0].equals(bArray[0])) {
-                    temp = new StringBuilder().append(tempArray[0]).append(DELIMITER).append(tempArray[1]).append(Config.DELIMITER).
-                            append(bArray[1]).append(DELIMITER).append(tempArray[2]).append(Config.DELIMITER).append(bArray[2]).toString();
+                    //两路归并
+                    String[] col = merge(tempArray[2].split(Pattern.quote(Config.DELIMITER)), bArray[2].split(Pattern.quote(Config.DELIMITER)));
+                    temp = new StringBuilder().append(tempArray[0]).append(DELIMITER).append(col[0]).append(DELIMITER).
+                            append(col[1]).toString();
                     String str;
                     if ((str = rList.get(ls[0]).readLine()) != null) {
                         b[ls[0]] = str;
@@ -188,7 +236,10 @@ public class MergeSort {
             }
             adjust(ls, b, n, ls[0]);
         }
-        bw.write(temp);//收尾
+        //最后一个
+        temp = new StringBuilder().append(temp).append(DELIMITER).
+                append(String.format("%.2f", Math.log((double) (count / (temp.split(Pattern.quote(DELIMITER))[1].split(Pattern.quote(Config.DELIMITER))).length)) / Math.log(2))).toString();
+        bw.write(temp);
         bw.flush();
         bw.close();
         for (BufferedReader br : rList) {
@@ -240,6 +291,18 @@ public class MergeSort {
             sqlSession = getSessionFactory().openSession();
             QuestionForwardDao forwardDao = sqlSession.getMapper(QuestionForwardDao.class);
             return forwardDao.getCount();
+        } finally {
+            sqlSession.close();
+        }
+    }
+
+    private static void insertListQuestion(List<Reverse> content) {
+        SqlSession sqlSession = null;
+        try {
+            sqlSession = getSessionFactory().openSession();
+            QuestionReverseDao reverseDao = sqlSession.getMapper(QuestionReverseDao.class);
+            reverseDao.insertAll(content);
+            sqlSession.commit();
         } finally {
             sqlSession.close();
         }

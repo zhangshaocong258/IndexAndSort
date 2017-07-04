@@ -51,7 +51,7 @@ public class ReverseIndex {
                 }
             }
         }
-        int size = questionsMap.size();
+        int size = fQuestions.size();
         for (Map.Entry<String, TreeSet<Forward>> entry : questionsMap.entrySet()) {
 //            rQuestion.setKeyWords(entry.getKey());
 //            rQuestion.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
@@ -87,7 +87,7 @@ public class ReverseIndex {
                 }
             }
         }
-        int size = peoplesMap.size();
+        int size = fPeoples.size();
         for (Map.Entry<String, TreeSet<Forward>> entry : peoplesMap.entrySet()) {
 //            rPeople.setKeyWords(entry.getKey());
 //            rPeople.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
@@ -120,7 +120,7 @@ public class ReverseIndex {
                 }
             }
         }
-        int size = topicsMap.size();
+        int size = fTopics.size();
         for (Map.Entry<String, TreeSet<Forward>> entry : topicsMap.entrySet()) {
 //            rTopic.setKeyWords(entry.getKey());
 //            rTopic.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
