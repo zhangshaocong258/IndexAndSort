@@ -46,9 +46,9 @@
         <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into questionf(title,url,description,quality,tQuality,keyWords) values
+        insert into questionf(title,url,description,quality,tQuality,keyWords,TF) values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.title},#{item.url},#{item.description},#{item.quality},#{item.tQuality},#{item.keyWords})
+            (#{item.title},#{item.url},#{item.description},#{item.quality},#{item.tQuality},#{item.keyWords},#{item.TF})
         </foreach>
     </insert>
 

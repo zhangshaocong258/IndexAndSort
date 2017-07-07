@@ -201,8 +201,8 @@ public class ForwardIndex {
                                     > 300 ? 300 : doc.select("div.RichContent-inner").first().text().length()) + "...";
                 }
 
-//                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
-                this.questionSet.add(new Forward(title, url, description, quality, tQuality, keyWords));
+                TF = String.format("%.2f", (double) 1 / keyWords.split(",").length);
+                this.questionSet.add(new Forward(title, url, description, quality, tQuality, keyWords, TF));
             } else if (topicMatcher.matches()) {
                 if (!(quality_str = doc.select("div.zm-topic-side-followers-info").select("strong").text()).equals("")) {
                     quality += Integer.valueOf(quality_str);//话题关注者

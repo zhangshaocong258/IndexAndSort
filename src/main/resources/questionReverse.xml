@@ -27,9 +27,9 @@
         <selectKey resultType="java.lang.Integer" keyProperty="id" order="AFTER">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into questionr(keyWords,IDF,pageID,qualityAndPID) values
+        insert into questionr(keyWords,IDF,pageID,TFIDF,qualityAndPID) values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.keyWords},#{item.IDF},#{item.pageID},#{item.qualityAndPID})
+            (#{item.keyWords},#{item.IDF},#{item.pageID},#{item.TFIDF},#{item.qualityAndPID})
         </foreach>
     </insert>
 

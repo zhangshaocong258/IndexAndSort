@@ -57,17 +57,23 @@ public class ReverseIndex {
 //            rQuestion.setIDF(String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2)));
             String keyWords = entry.getKey();
             String IDF = String.format("%.2f", Math.log((double) (size / entry.getValue().size())) / Math.log(2));
-            StringBuilder stringBuilder = new StringBuilder();
-            StringBuilder stringBuilder2 = new StringBuilder();
+            StringBuilder pageIDsb = new StringBuilder();
+            StringBuilder TFIDFsb = new StringBuilder();
+            StringBuilder qualityAndPIDsb = new StringBuilder();
             //urls表示为89，tf，idf DELIMITER 88，tf，idf
             for (Forward forward : entry.getValue()) {
-                stringBuilder.append(forward.getId()).append(Config.DELIMITER);
-                stringBuilder2.append(forward.getQuality()).append(",").append(forward.getId()).append(Config.DELIMITER);
+                pageIDsb.append(forward.getId()).append(Config.DELIMITER);
+                StringBuilder TFIDF = new StringBuilder();
+                String str = String.format("%.13f", Double.valueOf(IDF) * Double.valueOf(forward.getTF()) + forward.getQuality() / 1e13);
+                TFIDF.append(str.split("\\.")[0].length()).append(str);
+                TFIDFsb.append(forward.getId()).append(",").append(TFIDF.toString()).append(Config.DELIMITER);
+                qualityAndPIDsb.append(forward.getQuality()).append(",").append(forward.getId()).append(Config.DELIMITER);
             }
 //            rQuestion.setPageID(stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER)));
-            String pageID = stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER));
-            String qualityAndPID = stringBuilder2.toString().substring(0, stringBuilder2.toString().lastIndexOf(Config.DELIMITER));
-            rQuestionList.add(new Reverse(keyWords, IDF, pageID, qualityAndPID));
+            String pageID = pageIDsb.toString().substring(0, pageIDsb.toString().lastIndexOf(Config.DELIMITER));
+            String TFIDF = TFIDFsb.toString().substring(0, TFIDFsb.toString().lastIndexOf(Config.DELIMITER));
+            String qualityAndPID = qualityAndPIDsb.toString().substring(0, qualityAndPIDsb.toString().lastIndexOf(Config.DELIMITER));
+            rQuestionList.add(new Reverse(keyWords, IDF, pageID, TFIDF, qualityAndPID));
 //            insertQuestion(rQuestion);
         }
         insertListQuestion(rQuestionList);
