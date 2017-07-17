@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 /**
  * Created by zsc on 2017/7/2.
  * 归并法构建索引
+ * 设置 -Xms300M -Xmx300M 进行调试
  */
 public class MergeSort {
 
@@ -43,8 +44,8 @@ public class MergeSort {
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(finalPath))));
         String str;
         while ((str = br.readLine()) != null) {
-            rQuestionList.add(new Reverse(str.split(Pattern.quote(DELIMITER))[0], str.split(Pattern.quote(DELIMITER))[3],
-                    str.split(Pattern.quote(DELIMITER))[1], str.split(Pattern.quote(DELIMITER))[2]));
+            rQuestionList.add(new Reverse(str.split(Pattern.quote(DELIMITER))[0], str.split(Pattern.quote(DELIMITER))[4],
+                    str.split(Pattern.quote(DELIMITER))[1], str.split(Pattern.quote(DELIMITER))[3], str.split(Pattern.quote(DELIMITER))[2]));
         }
         br.close();
         insertListQuestion(rQuestionList);
@@ -93,8 +94,8 @@ public class MergeSort {
 
     //得到未排序的倒排文件
     private static void genToBeSorted() throws IOException {
-        for (int i = 0; i < 10; i++) {
-            fQuestions = selectQuestion(2000 * i, 2000);
+        for (int i = 0; i < 20; i++) {
+            fQuestions = selectQuestion(10000 * i, 10000);
             questionsMap = new HashMap<String, TreeSet<Forward>>();
             for (Forward question : fQuestions) {
                 List<String> keyWords = Arrays.asList(question.getKeyWords().split(", "));//间隔是逗号加空格！！！
@@ -114,14 +115,14 @@ public class MergeSort {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
             for (Map.Entry<String, TreeSet<Forward>> entry : questionsMap.entrySet()) {
                 String keyWords = entry.getKey();
-                StringBuilder stringBuilder = new StringBuilder();
-                StringBuilder stringBuilder2 = new StringBuilder();
+                StringBuilder pageIDsb = new StringBuilder();
+                StringBuilder qualityAndPIDsb = new StringBuilder();
                 for (Forward forward : entry.getValue()) {
-                    stringBuilder.append(forward.getId()).append(Config.DELIMITER);
-                    stringBuilder2.append(forward.getQuality()).append(",").append(forward.getId()).append(Config.DELIMITER);
+                    pageIDsb.append(forward.getId()).append(Config.DELIMITER);
+                    qualityAndPIDsb.append(forward.getQuality()).append(",").append(forward.getId()).append(",").append(forward.getTF()).append(Config.DELIMITER);
                 }
-                String pageID = stringBuilder.toString().substring(0, stringBuilder.toString().lastIndexOf(Config.DELIMITER));
-                String qualityAndPID = stringBuilder2.toString().substring(0, stringBuilder2.toString().lastIndexOf(Config.DELIMITER));
+                String pageID = pageIDsb.toString().substring(0, pageIDsb.toString().lastIndexOf(Config.DELIMITER));
+                String qualityAndPID = qualityAndPIDsb.toString().substring(0, qualityAndPIDsb.toString().lastIndexOf(Config.DELIMITER));
                 StringBuilder sb = new StringBuilder();
                 sb.append(keyWords).append(DELIMITER).append(pageID).append(DELIMITER).append(qualityAndPID);
                 bw.write(sb.toString());
@@ -220,8 +221,23 @@ public class MergeSort {
                         b[ls[0]] = maxKey;
                     }
                 } else {
-                    temp = new StringBuilder().append(temp).append(DELIMITER).
-                            append(String.format("%.2f", Math.log((double) (count / (temp.split(Pattern.quote(DELIMITER))[1].split(Pattern.quote(Config.DELIMITER))).length)) / Math.log(2))).toString();
+                    String IDF = String.format("%.2f", Math.log((double) (count / (temp.split(Pattern.quote(DELIMITER))[1].
+                            split(Pattern.quote(Config.DELIMITER))).length)) / Math.log(2));
+                    StringBuilder PIDAndTFIDFsb = new StringBuilder();
+                    StringBuilder qualityAndPIDsb = new StringBuilder();
+                    for (String str : tempArray[2].split(Pattern.quote(Config.DELIMITER))) {//str : 3282,14378,0.07    3108,15784,0.09
+                        StringBuilder TFIDF = new StringBuilder();
+                        String tempStr= String.format("%.13f", Double.valueOf(IDF) * Double.valueOf(str.split(",")[2])
+                                + Integer.valueOf(str.split(",")[0]) / 1e13);
+                        TFIDF.append(tempStr.split("\\.")[0].length()).append(tempStr);
+                        PIDAndTFIDFsb.append(str.split(",")[1]).append(",").append(TFIDF.toString()).append(Config.DELIMITER);
+                        qualityAndPIDsb.append(str.substring(0, str.lastIndexOf(","))).append(Config.DELIMITER);
+                    }
+
+                    temp = new StringBuilder().append(temp.substring(0, temp.lastIndexOf(DELIMITER))).append(DELIMITER).
+                            append(qualityAndPIDsb.toString().substring(0, qualityAndPIDsb.toString().length() - 1)).append(DELIMITER).
+                            append(PIDAndTFIDFsb.toString().substring(0, PIDAndTFIDFsb.toString().length() - 1)).append(DELIMITER).append(IDF).toString();
+
                     bw.write(temp);
                     bw.newLine();
                     bw.flush();
@@ -237,8 +253,25 @@ public class MergeSort {
             adjust(ls, b, n, ls[0]);
         }
         //最后一个
-        temp = new StringBuilder().append(temp).append(DELIMITER).
-                append(String.format("%.2f", Math.log((double) (count / (temp.split(Pattern.quote(DELIMITER))[1].split(Pattern.quote(Config.DELIMITER))).length)) / Math.log(2))).toString();
+        String IDF = String.format("%.2f", Math.log((double) (count / (temp.split(Pattern.quote(DELIMITER))[1].
+                split(Pattern.quote(Config.DELIMITER))).length)) / Math.log(2));
+        StringBuilder PIDAndTFIDFsb = new StringBuilder();
+        StringBuilder qualityAndPIDsb = new StringBuilder();
+        for (String str : temp.split(Pattern.quote(DELIMITER))[2].split(Pattern.quote(Config.DELIMITER))) {//str : 3282,14378,0.07    3108,15784,0.09
+            StringBuilder TFIDF = new StringBuilder();
+            String tempStr= String.format("%.13f", Double.valueOf(IDF) * Double.valueOf(str.split(",")[2])
+                    + Integer.valueOf(str.split(",")[0]) / 1e13);
+            TFIDF.append(tempStr.split("\\.")[0].length()).append(tempStr);
+            PIDAndTFIDFsb.append(str.split(",")[1]).append(",").append(TFIDF.toString()).append(Config.DELIMITER);
+            qualityAndPIDsb.append(str.substring(0, str.lastIndexOf(","))).append(Config.DELIMITER);
+        }
+
+        temp = new StringBuilder().append(temp.substring(0, temp.lastIndexOf(DELIMITER))).append(DELIMITER).
+                append(qualityAndPIDsb.toString().substring(0, qualityAndPIDsb.toString().length() - 1)).append(DELIMITER).
+                append(PIDAndTFIDFsb.toString().substring(0, PIDAndTFIDFsb.toString().length() - 1)).append(DELIMITER).append(IDF).toString();
+
+//        temp = new StringBuilder().append(temp).append(DELIMITER).
+//                append(String.format("%.2f", Math.log((double) (count / (temp.split(Pattern.quote(DELIMITER))[1].split(Pattern.quote(Config.DELIMITER))).length)) / Math.log(2))).toString();
         bw.write(temp);
         bw.flush();
         bw.close();
