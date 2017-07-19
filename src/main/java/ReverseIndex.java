@@ -42,11 +42,11 @@ public class ReverseIndex {
         for (Forward question : fQuestions) {
             List<String> keyWords = Arrays.asList(question.getKeyWords().split(", "));//间隔是逗号加空格！！！
             for (String keyWord : keyWords) {
-                if (questionsMap.containsKey(keyWord)) {
-                    questionsMap.get(keyWord).add(question);
+                if (questionsMap.containsKey(keyWord.toLowerCase())) {
+                    questionsMap.get(keyWord.toLowerCase()).add(question);
                 } else {
-                    questionsMap.put(keyWord, new TreeSet<Forward>());
-                    questionsMap.get(keyWord).add(question);
+                    questionsMap.put(keyWord.toLowerCase(), new TreeSet<Forward>());
+                    questionsMap.get(keyWord.toLowerCase()).add(question);
 
                 }
             }
@@ -85,11 +85,11 @@ public class ReverseIndex {
         for (Forward people : fPeoples) {
             List<String> keyWords = Arrays.asList(people.getKeyWords().split(", "));//间隔是逗号加空格！！！
             for (String keyWord : keyWords) {
-                if (peoplesMap.containsKey(keyWord)) {
-                    peoplesMap.get(keyWord).add(people);
+                if (peoplesMap.containsKey(keyWord.toLowerCase())) {
+                    peoplesMap.get(keyWord.toLowerCase()).add(people);
                 } else {
-                    peoplesMap.put(keyWord, new TreeSet<Forward>());
-                    peoplesMap.get(keyWord).add(people);
+                    peoplesMap.put(keyWord.toLowerCase(), new TreeSet<Forward>());
+                    peoplesMap.get(keyWord.toLowerCase()).add(people);
                 }
             }
         }
@@ -118,11 +118,11 @@ public class ReverseIndex {
         for (Forward topic : fTopics) {
             List<String> keyWords = Arrays.asList(topic.getKeyWords().split(", "));//间隔是逗号加空格！！！
             for (String keyWord : keyWords) {
-                if (topicsMap.containsKey(keyWord)) {
-                    topicsMap.get(keyWord).add(topic);
+                if (topicsMap.containsKey(keyWord.toLowerCase())) {
+                    topicsMap.get(keyWord.toLowerCase()).add(topic);
                 } else {
-                    topicsMap.put(keyWord, new TreeSet<Forward>());
-                    topicsMap.get(keyWord).add(topic);
+                    topicsMap.put(keyWord.toLowerCase(), new TreeSet<Forward>());
+                    topicsMap.get(keyWord.toLowerCase()).add(topic);
                 }
             }
         }

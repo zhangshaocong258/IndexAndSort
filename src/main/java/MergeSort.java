@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * Created by zsc on 2017/7/2.
- * 归并法构建索引
+ * 归并法构建问题索引
  * 设置 -Xms300M -Xmx300M 进行调试
  */
 public class MergeSort {
@@ -100,11 +100,11 @@ public class MergeSort {
             for (Forward question : fQuestions) {
                 List<String> keyWords = Arrays.asList(question.getKeyWords().split(", "));//间隔是逗号加空格！！！
                 for (String keyWord : keyWords) {
-                    if (questionsMap.containsKey(keyWord)) {
-                        questionsMap.get(keyWord).add(question);
+                    if (questionsMap.containsKey(keyWord.toLowerCase())) {
+                        questionsMap.get(keyWord.toLowerCase()).add(question);
                     } else {
-                        questionsMap.put(keyWord, new TreeSet<Forward>());
-                        questionsMap.get(keyWord).add(question);
+                        questionsMap.put(keyWord.toLowerCase(), new TreeSet<Forward>());
+                        questionsMap.get(keyWord.toLowerCase()).add(question);
                     }
                 }
             }
