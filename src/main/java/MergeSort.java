@@ -33,10 +33,10 @@ public class MergeSort {
 
 
     public static void main(String args[]) throws IOException {
-//        genToBeSorted();
-//        genSorted();
-//        genReverseIndex();
-//        insertReverseIndex();
+        genToBeSorted();
+        genSorted();
+        genReverseIndex();
+        insertReverseIndex();
     }
 
     private static void insertReverseIndex() throws IOException {
@@ -44,6 +44,7 @@ public class MergeSort {
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(finalPath))));
         String str;
         while ((str = br.readLine()) != null) {
+            //keyWords, IDF, pageID, TFIDF, qualityAndPID
             rQuestionList.add(new Reverse(str.split(Pattern.quote(DELIMITER))[0], str.split(Pattern.quote(DELIMITER))[4],
                     str.split(Pattern.quote(DELIMITER))[1], str.split(Pattern.quote(DELIMITER))[3], str.split(Pattern.quote(DELIMITER))[2]));
         }
